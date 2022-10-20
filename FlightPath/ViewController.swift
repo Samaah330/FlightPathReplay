@@ -52,13 +52,20 @@ class ViewController: UIViewController {
     @IBAction func start(_ sender: Any) {
         print("Button Pressed!")
         
+        var count = 0
         let hummingbirdPos = jsonData.hummingbirdPos
-        if let obj = boxAnchor!.steelBox {
-            for coordinate in hummingbirdPos {
+        if let obj = self.boxAnchor!.steelBox {
+            var timer = Timer.scheduledTimer(withTimeInterval: 1/60, repeats: true){ t in
+                var coordinate = hummingbirdPos[count]
                 if coordinate["x"] != nil && coordinate["y"] != nil && coordinate["z"] != nil {
                     let translation = SIMD3<Float>(x: coordinate["x"]!, y: coordinate["y"]!, z: coordinate["z"]!)
                     let transform = Transform(scale: .one, rotation: simd_quatf(), translation: translation)
                     obj.move(to: transform, relativeTo: nil)
+                }
+                
+                count += 1
+                if count >= hummingbirdPos.count {
+                    t.invalidate()
                 }
             }
         }
