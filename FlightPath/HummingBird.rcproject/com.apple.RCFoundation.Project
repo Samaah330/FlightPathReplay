@@ -21,26 +21,47 @@
               "material" : "concrete",
               "overrides" : {
                 "children" : {
-                  "4A213441-135C-450E-8EF8-1A4EAB267C1D" : {
+                  "4A213441-135C-450E-8EF8-1A4EAB267C1D" : null,
+                  "7F5F1ADC-E5E4-4EF5-A5B5-FC43B071FFA5" : null,
+                  "442B2422-EE9B-479C-A923-DB58642A317E" : null,
+                  "632E476F-1E55-4E30-9723-1C51DD2E8B89" : null,
+                  "B91C7CA3-4AB1-4253-9A84-07383168A8A8" : null,
+                  "CD0A160E-B950-4CBB-92EB-A2F762D19B5D" : {
                     "overrides" : {
                       "arguments" : [
                         [
-                          "material",
+                          "item",
                           {
                             "typeName" : "String",
-                            "value" : "standard"
+                            "value" : "Biplane Toy"
                           }
                         ],
                         [
-                          "type",
+                          "style",
                           {
                             "typeName" : "String",
-                            "value" : "box"
+                            "value" : "Stylized"
                           }
                         ]
                       ],
+                      "children" : {
+                        "item" : {
+                          "overrides" : {
+                            "factory" : null,
+                            "runtimeAttributes" : [
+                              [
+                                "RuntimeIdentifier",
+                                {
+                                  "typeName" : "UUID",
+                                  "value" : "0D91AB48-30ED-47DC-962F-4D3C3494DAD1"
+                                }
+                              ]
+                            ]
+                          }
+                        }
+                      },
                       "factory" : {
-                        "identifier" : "com.apple.rc.af.CoreAssetFactories.PrimitiveShapeAssetFactory",
+                        "identifier" : "com.apple.rc.af.ToyBiplane.cb29dbdd-e4b3-4fe7-ba22-7bec63300260",
                         "version" : "1.0"
                       },
                       "runtimeAttributes" : [
@@ -48,31 +69,31 @@
                           "RuntimeIdentifier",
                           {
                             "typeName" : "UUID",
-                            "value" : "3788A5B5-0388-488A-8304-7B90FEBA6FAC"
+                            "value" : "7DEA5702-08F6-4455-A79D-A53D02B5872B"
                           }
                         ],
                         [
                           "entityName",
                           {
                             "typeName" : "String",
-                            "value" : "Steel Box"
+                            "value" : "hummingBird"
                           }
                         ]
                       ]
                     },
                     "transform" : {
                       "matrix" : [
-                        5,
+                        2,
                         0,
                         0,
                         0,
                         0,
-                        5,
+                        2,
                         0,
                         0,
                         0,
                         0,
-                        5,
+                        2,
                         0,
                         0,
                         0,
@@ -80,10 +101,7 @@
                         1
                       ]
                     }
-                  },
-                  "7F5F1ADC-E5E4-4EF5-A5B5-FC43B071FFA5" : null,
-                  "632E476F-1E55-4E30-9723-1C51DD2E8B89" : null,
-                  "B91C7CA3-4AB1-4253-9A84-07383168A8A8" : null
+                  }
                 },
                 "factory" : null,
                 "runtimeAttributes" : [
@@ -97,7 +115,7 @@
                 ]
               },
               "physicsMode" : "grid",
-              "title" : "Box",
+              "title" : "hummingBird",
               "viewTransform" : {
                 "cameraTransform" : [
                   0.99999994039535522,

@@ -13,7 +13,8 @@ class ViewController: UIViewController {
     
     @IBOutlet var arView: ARView!
     
-    var boxAnchor: Experience.Box!
+    var hummingBird: HummingBird._HummingBird!
+    var captureSphere: CaptureSphere._CaptureSphere!
     
     var jsonData: GameData!
     
@@ -41,31 +42,42 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
         // Load the "Box" scene from the "Experience" Reality File
-        boxAnchor = try! Experience.loadBox()
+        hummingBird = try! HummingBird.load_HummingBird()
+        captureSphere = try! CaptureSphere.load_CaptureSphere()
         
         // Add the box anchor to the scene
-        arView.scene.anchors.append(boxAnchor!)
+        arView.scene.anchors.append(hummingBird!)
+        arView.scene.anchors.append(captureSphere!)
         
         jsonData = loadJson(fileName: "data")!
     }
     
     @IBAction func start(_ sender: Any) {
-        print("Button Pressed!")
-        
         var count = 0
         let hummingbirdPos = jsonData.hummingbirdPos
-        if let obj = self.boxAnchor!.steelBox {
-            var timer = Timer.scheduledTimer(withTimeInterval: 1/60, repeats: true){ t in
-                var coordinate = hummingbirdPos[count]
-                if coordinate["x"] != nil && coordinate["y"] != nil && coordinate["z"] != nil {
-                    let translation = SIMD3<Float>(x: coordinate["x"]!, y: coordinate["y"]!, z: coordinate["z"]!)
-                    let transform = Transform(scale: .one, rotation: simd_quatf(), translation: translation)
-                    obj.move(to: transform, relativeTo: nil)
-                }
-                
-                count += 1
-                if count >= hummingbirdPos.count {
-                    t.invalidate()
+        let captureSpherePos = jsonData.spherePos
+        
+        if let hummingBirdObj = self.hummingBird!.hummingBird {
+            if let captureSphereObj = self.captureSphere!.captureSphere {
+                var timer = Timer.scheduledTimer(withTimeInterval: 1/60, repeats: true){ t in
+                    var hummingBirdCoordinate = hummingbirdPos[count]
+                    if hummingBirdCoordinate["x"] != nil && hummingBirdCoordinate["y"] != nil && hummingBirdCoordinate["z"] != nil {
+                        let hummingBirdTranslation = SIMD3<Float>(x: hummingBirdCoordinate["x"]!, y: hummingBirdCoordinate["y"]!, z: hummingBirdCoordinate["z"]!)
+                        let hummingBirdTransform = Transform(scale: .one, rotation: simd_quatf(), translation: hummingBirdTranslation)
+                        hummingBirdObj.move(to: hummingBirdTransform, relativeTo: nil)
+                    }
+                    
+                    var captureSphereCoordinate = captureSpherePos[count]
+                    if captureSphereCoordinate["x"] != nil && captureSphereCoordinate["y"] != nil && captureSphereCoordinate["z"] != nil {
+                        let captureSphereTranslation = SIMD3<Float>(x: captureSphereCoordinate["x"]!, y: captureSphereCoordinate["y"]!, z: captureSphereCoordinate["z"]!)
+                        let captureSphereTransform = Transform(scale: .one, rotation: simd_quatf(), translation: captureSphereTranslation)
+                        captureSphereObj.move(to: captureSphereTransform, relativeTo: nil)
+                    }
+                    
+                    count += 1
+                    if count >= hummingbirdPos.count {
+                        t.invalidate()
+                    }
                 }
             }
         }
