@@ -18,6 +18,12 @@
 		6C8E684A28E6D69800D84752 /* FlightPathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8E684928E6D69800D84752 /* FlightPathTests.swift */; };
 		6C8E685428E6D69800D84752 /* FlightPathUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8E685328E6D69800D84752 /* FlightPathUITests.swift */; };
 		6C8E685628E6D69800D84752 /* FlightPathUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8E685528E6D69800D84752 /* FlightPathUITestsLaunchTests.swift */; };
+		D4E23D1F2939A5DE00F7B359 /* GradientView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E23D1E2939A5DE00F7B359 /* GradientView.swift */; };
+		D4E23D212939A8AE00F7B359 /* NoteEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E23D202939A8AE00F7B359 /* NoteEntity.swift */; };
+		D4E23D232939AA1100F7B359 /* NoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E23D222939AA1100F7B359 /* NoteView.swift */; };
+		D4E23D252939AA9000F7B359 /* KeyBoardDismissButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E23D242939AA9000F7B359 /* KeyBoardDismissButton.swift */; };
+		D4E23D272939AADD00F7B359 /* ScreenSpaceComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E23D262939AADD00F7B359 /* ScreenSpaceComponent.swift */; };
+		D4E23D292939AB4900F7B359 /* UIViewSuperView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E23D282939AB4900F7B359 /* UIViewSuperView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,6 +58,12 @@
 		6C8E684F28E6D69800D84752 /* FlightPathUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FlightPathUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6C8E685328E6D69800D84752 /* FlightPathUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightPathUITests.swift; sourceTree = "<group>"; };
 		6C8E685528E6D69800D84752 /* FlightPathUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightPathUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		D4E23D1E2939A5DE00F7B359 /* GradientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientView.swift; sourceTree = "<group>"; };
+		D4E23D202939A8AE00F7B359 /* NoteEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteEntity.swift; sourceTree = "<group>"; };
+		D4E23D222939AA1100F7B359 /* NoteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteView.swift; sourceTree = "<group>"; };
+		D4E23D242939AA9000F7B359 /* KeyBoardDismissButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBoardDismissButton.swift; sourceTree = "<group>"; };
+		D4E23D262939AADD00F7B359 /* ScreenSpaceComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenSpaceComponent.swift; sourceTree = "<group>"; };
+		D4E23D282939AB4900F7B359 /* UIViewSuperView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewSuperView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,6 +116,12 @@
 			children = (
 				6C8E683328E6D69500D84752 /* AppDelegate.swift */,
 				6C8E683528E6D69500D84752 /* ViewController.swift */,
+				D4E23D1E2939A5DE00F7B359 /* GradientView.swift */,
+				D4E23D202939A8AE00F7B359 /* NoteEntity.swift */,
+				D4E23D222939AA1100F7B359 /* NoteView.swift */,
+				D4E23D242939AA9000F7B359 /* KeyBoardDismissButton.swift */,
+				D4E23D262939AADD00F7B359 /* ScreenSpaceComponent.swift */,
+				D4E23D282939AB4900F7B359 /* UIViewSuperView.swift */,
 				6C31BF7029151EF8006331B3 /* CaptureSphere.rcproject */,
 				6C8E683928E6D69500D84752 /* Main.storyboard */,
 				6C8E683C28E6D69800D84752 /* Assets.xcassets */,
@@ -265,8 +283,14 @@
 			files = (
 				6C48D2142915211C005D1C30 /* CaptureSphere.rcproject in Sources */,
 				6C48D21629152158005D1C30 /* HummingBird.rcproject in Sources */,
+				D4E23D1F2939A5DE00F7B359 /* GradientView.swift in Sources */,
 				6C8E683628E6D69500D84752 /* ViewController.swift in Sources */,
+				D4E23D212939A8AE00F7B359 /* NoteEntity.swift in Sources */,
+				D4E23D232939AA1100F7B359 /* NoteView.swift in Sources */,
 				6C8E683428E6D69500D84752 /* AppDelegate.swift in Sources */,
+				D4E23D272939AADD00F7B359 /* ScreenSpaceComponent.swift in Sources */,
+				D4E23D252939AA9000F7B359 /* KeyBoardDismissButton.swift in Sources */,
+				D4E23D292939AB4900F7B359 /* UIViewSuperView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -444,7 +468,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = P3H6X727CU;
+				DEVELOPMENT_TEAM = 4R47PD9WT9;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -476,7 +500,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = P3H6X727CU;
+				DEVELOPMENT_TEAM = 4R47PD9WT9;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
