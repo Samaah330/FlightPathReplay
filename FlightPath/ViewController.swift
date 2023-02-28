@@ -17,6 +17,11 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
     var hummingBird: HummingBird._HummingBird!
     var captureSphere: CaptureSphere._CaptureSphere!
     
+//    if let Dots = try? Dots.loadBox() {
+//        let box = Dots.Dots
+//        // Do something with box.
+//    }
+    
     var jsonData: GameData!
     
     @IBOutlet var arSCNView : ARSCNView!
@@ -139,6 +144,57 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                         captureSphereObj.move(to: captureSphereTransform, relativeTo: nil)
                     }
                     
+                    
+                    // trailing dot1 behind capture sphere
+                    let dot1 = self.captureSphere.dot1
+                    
+                    let dot1x = (captureSphereCoordinate["x"] ?? 0) - 0.03
+                    let dot1y = (captureSphereCoordinate["y"] ?? 0) - 0.03
+                    let dot1z = (captureSphereCoordinate["z"] ?? 0) - 0.03
+                    
+                    let dot1Translation = SIMD3<Float>(x: dot1x, y: dot1y, z: dot1z)
+                    let dot1Transform = Transform(scale: .one, rotation: simd_quatf(), translation: dot1Translation)
+                    dot1?.move(to: dot1Transform, relativeTo: nil)
+                    
+                    
+                    // trailing dot2 behind capture sphere
+                    let dot2 = self.captureSphere.dot2
+                    
+                    let dot2x = (captureSphereCoordinate["x"] ?? 0) - 0.04
+                    let dot2y = (captureSphereCoordinate["y"] ?? 0) - 0.04
+                    let dot2z = (captureSphereCoordinate["z"] ?? 0) - 0.04
+                    
+                    let dot2Translation = SIMD3<Float>(x: dot2x, y: dot2y, z: dot2z)
+                    let dot2Transform = Transform(scale: .one, rotation: simd_quatf(), translation: dot2Translation)
+                    dot2?.move(to: dot2Transform, relativeTo: nil)
+                    
+                    
+                    // trailing dot3 behind capture sphere
+                    let dot3 = self.captureSphere.dot3
+                    
+                    let dot3x = (captureSphereCoordinate["x"] ?? 0) - 0.05
+                    let dot3y = (captureSphereCoordinate["y"] ?? 0) - 0.05
+                    let dot3z = (captureSphereCoordinate["z"] ?? 0) - 0.05
+                    
+                    let dot3Translation = SIMD3<Float>(x: dot3x, y: dot3y, z: dot3z)
+                    let dot3Transform = Transform(scale: .one, rotation: simd_quatf(), translation: dot3Translation)
+                    dot3?.move(to: dot3Transform, relativeTo: nil)
+                    
+                    // trailing dot4 behind capture sphere
+                    let dot4 = self.captureSphere.dot4
+                    
+                    let dot4x = (captureSphereCoordinate["x"] ?? 0) - 0.06
+                    let dot4y = (captureSphereCoordinate["y"] ?? 0) - 0.06
+                    let dot4z = (captureSphereCoordinate["z"] ?? 0) - 0.06
+                    
+                    let dot4Translation = SIMD3<Float>(x: dot4x, y: dot4y, z: dot4z)
+                    let dot4Transform = Transform(scale: .one, rotation: simd_quatf(), translation: dot4Translation)
+                    dot4?.move(to: dot4Transform, relativeTo: nil)
+                    
+                    
+                    
+
+
                     count += 1
                     if count >= hummingbirdPos.count {
                         t.invalidate()

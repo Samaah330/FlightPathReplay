@@ -25,6 +25,75 @@
                   "7F5F1ADC-E5E4-4EF5-A5B5-FC43B071FFA5" : null,
                   "442B2422-EE9B-479C-A923-DB58642A317E" : null,
                   "632E476F-1E55-4E30-9723-1C51DD2E8B89" : null,
+                  "17921988-F35C-4931-9A67-4968D71242F2" : {
+                    "overrides" : {
+                      "arguments" : [
+                        [
+                          "item",
+                          {
+                            "typeName" : "String",
+                            "value" : "Rocket Toy"
+                          }
+                        ],
+                        [
+                          "style",
+                          {
+                            "typeName" : "String",
+                            "value" : "Stylized"
+                          }
+                        ]
+                      ],
+                      "children" : {
+                        "item" : {
+                          "overrides" : {
+                            "factory" : null,
+                            "runtimeAttributes" : [
+                              [
+                                "RuntimeIdentifier",
+                                {
+                                  "typeName" : "UUID",
+                                  "value" : "4FCC8922-1902-4F75-B522-518ED1C541DC"
+                                }
+                              ]
+                            ]
+                          }
+                        }
+                      },
+                      "factory" : {
+                        "identifier" : "com.apple.rc.af.ToyRocket.0ff100d1-1ee4-4d77-9e16-b21d1a031f5e",
+                        "version" : "1.0"
+                      },
+                      "runtimeAttributes" : [
+                        [
+                          "RuntimeIdentifier",
+                          {
+                            "typeName" : "UUID",
+                            "value" : "B19C7B61-3F99-4A04-AB82-FDDD8967EF0D"
+                          }
+                        ]
+                      ]
+                    },
+                    "transform" : {
+                      "matrix" : [
+                        0.34613019227981567,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0.34613019227981567,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0.34613019227981567,
+                        0,
+                        0.20348571240901947,
+                        0.0034545361995697021,
+                        0.041377425193786621,
+                        1
+                      ]
+                    }
+                  },
                   "B91C7CA3-4AB1-4253-9A84-07383168A8A8" : null,
                   "CD0A160E-B950-4CBB-92EB-A2F762D19B5D" : {
                     "overrides" : {
@@ -83,17 +152,17 @@
                     },
                     "transform" : {
                       "matrix" : [
-                        2,
+                        3.4028234663852886e+38,
                         0,
                         0,
                         0,
                         0,
-                        2,
+                        3.4028234663852886e+38,
                         0,
                         0,
                         0,
                         0,
-                        2,
+                        3.4028234663852886e+38,
                         0,
                         0,
                         0,

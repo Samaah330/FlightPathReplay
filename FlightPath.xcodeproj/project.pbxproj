@@ -58,6 +58,7 @@
 		6C8E684F28E6D69800D84752 /* FlightPathUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FlightPathUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6C8E685328E6D69800D84752 /* FlightPathUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightPathUITests.swift; sourceTree = "<group>"; };
 		6C8E685528E6D69800D84752 /* FlightPathUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightPathUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		D42F963B29AC656400EB6FF1 /* Dots.rcproject */ = {isa = PBXFileReference; lastKnownFileType = file.rcproject; path = Dots.rcproject; sourceTree = "<group>"; };
 		D4E23D1E2939A5DE00F7B359 /* GradientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientView.swift; sourceTree = "<group>"; };
 		D4E23D202939A8AE00F7B359 /* NoteEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteEntity.swift; sourceTree = "<group>"; };
 		D4E23D222939AA1100F7B359 /* NoteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteView.swift; sourceTree = "<group>"; };
@@ -128,6 +129,7 @@
 				6C8E683E28E6D69800D84752 /* LaunchScreen.storyboard */,
 				6C29C06628E6D95E001688E2 /* data.json */,
 				6C48D21529152154005D1C30 /* HummingBird.rcproject */,
+				D42F963B29AC656400EB6FF1 /* Dots.rcproject */,
 			);
 			path = FlightPath;
 			sourceTree = "<group>";
