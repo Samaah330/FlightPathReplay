@@ -14,6 +14,8 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
     
     @IBOutlet var arView: ARView!
     
+    var counter = 0
+    
     var hummingBird: HummingBird._HummingBird!
     var captureSphere: CaptureSphere._CaptureSphere!
     
@@ -65,6 +67,7 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         // Load the "Box" scene from the "Experience" Reality File
         hummingBird = try! HummingBird.load_HummingBird()
         captureSphere = try! CaptureSphere.load_CaptureSphere()
+        
         
         // Add the box anchor to the scene
         arView.scene.anchors.append(hummingBird!)
@@ -144,57 +147,94 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                         captureSphereObj.move(to: captureSphereTransform, relativeTo: nil)
                     }
                     
-                    
                     // trailing dot1 behind capture sphere
                     let dot1 = self.captureSphere.dot1
                     
+                    // position
                     let dot1x = (captureSphereCoordinate["x"] ?? 0) - 0.03
                     let dot1y = (captureSphereCoordinate["y"] ?? 0) - 0.03
                     let dot1z = (captureSphereCoordinate["z"] ?? 0) - 0.03
                     
                     let dot1Translation = SIMD3<Float>(x: dot1x, y: dot1y, z: dot1z)
-                    let dot1Transform = Transform(scale: .one, rotation: simd_quatf(), translation: dot1Translation)
+                    var dot1Transform = Transform(scale: .one, rotation: simd_quatf(), translation: dot1Translation)
+                    
                     dot1?.move(to: dot1Transform, relativeTo: nil)
                     
+                    // create material w/ transparency of 0.5
+                    var transparent_material = PhysicallyBasedMaterial()
+                    transparent_material.blending = .transparent(opacity: .init(floatLiteral: 0.7))
+                    
+                    // set this material to the first dot - in order to find the name of the dot do
+                    // let mat = self.captureSphere.findEntity(named: "Dot1") ; print(mat)
+                    if let mat1 = self.captureSphere.findEntity(named: "simpBld_root")
+                                                                          as? ModelEntity {
+
+                        mat1.model?.materials[0] = transparent_material
+
+                    }
+              
                     
                     // trailing dot2 behind capture sphere
                     let dot2 = self.captureSphere.dot2
                     
-                    let dot2x = (captureSphereCoordinate["x"] ?? 0) - 0.04
-                    let dot2y = (captureSphereCoordinate["y"] ?? 0) - 0.04
-                    let dot2z = (captureSphereCoordinate["z"] ?? 0) - 0.04
+                    let dot2x = (captureSphereCoordinate["x"] ?? 0) - 0.05
+                    let dot2y = (captureSphereCoordinate["y"] ?? 0) - 0.05
+                    let dot2z = (captureSphereCoordinate["z"] ?? 0) - 0.05
                     
                     let dot2Translation = SIMD3<Float>(x: dot2x, y: dot2y, z: dot2z)
-                    let dot2Transform = Transform(scale: .one, rotation: simd_quatf(), translation: dot2Translation)
+                    var dot2Transform = Transform(scale: .one, rotation: simd_quatf(), translation: dot2Translation)
+                
                     dot2?.move(to: dot2Transform, relativeTo: nil)
                     
+                    
+                    // create material w/ transparency of 0.5
+                    var transparent_material2 = PhysicallyBasedMaterial()
+                    transparent_material2.blending = .transparent(opacity: .init(floatLiteral: 0.5))
+                    
+//                    simpBld_root
+                    if let mat2 = self.captureSphere.dot2?.findEntity(named: "simpBld_root") as? ModelEntity {
+                        mat2.model?.materials[0] = transparent_material2
+                    }
                     
                     // trailing dot3 behind capture sphere
                     let dot3 = self.captureSphere.dot3
                     
-                    let dot3x = (captureSphereCoordinate["x"] ?? 0) - 0.05
-                    let dot3y = (captureSphereCoordinate["y"] ?? 0) - 0.05
-                    let dot3z = (captureSphereCoordinate["z"] ?? 0) - 0.05
+                    let dot3x = (captureSphereCoordinate["x"] ?? 0) - 0.07
+                    let dot3y = (captureSphereCoordinate["y"] ?? 0) - 0.07
+                    let dot3z = (captureSphereCoordinate["z"] ?? 0) - 0.07
                     
                     let dot3Translation = SIMD3<Float>(x: dot3x, y: dot3y, z: dot3z)
-                    let dot3Transform = Transform(scale: .one, rotation: simd_quatf(), translation: dot3Translation)
+                    var dot3Transform = Transform(scale: .one, rotation: simd_quatf(), translation: dot3Translation)
+
                     dot3?.move(to: dot3Transform, relativeTo: nil)
+                    
+                    // create material w/ transparency of 0.5
+                    var transparent_material3 = PhysicallyBasedMaterial()
+                    transparent_material3.blending = .transparent(opacity: .init(floatLiteral: 0.5))
+                    
+                    if let mat3 = self.captureSphere.dot3?.findEntity(named: "simpBld_root") as? ModelEntity {
+                        mat3.model?.materials[0] = transparent_material3
+                    }
                     
                     // trailing dot4 behind capture sphere
                     let dot4 = self.captureSphere.dot4
                     
-                    let dot4x = (captureSphereCoordinate["x"] ?? 0) - 0.06
-                    let dot4y = (captureSphereCoordinate["y"] ?? 0) - 0.06
-                    let dot4z = (captureSphereCoordinate["z"] ?? 0) - 0.06
+                    let dot4x = (captureSphereCoordinate["x"] ?? 0) - 0.08
+                    let dot4y = (captureSphereCoordinate["y"] ?? 0) - 0.08
+                    let dot4z = (captureSphereCoordinate["z"] ?? 0) - 0.08
                     
                     let dot4Translation = SIMD3<Float>(x: dot4x, y: dot4y, z: dot4z)
-                    let dot4Transform = Transform(scale: .one, rotation: simd_quatf(), translation: dot4Translation)
+                    var dot4Transform = Transform(scale: .one, rotation: simd_quatf(), translation: dot4Translation)
+                    
                     dot4?.move(to: dot4Transform, relativeTo: nil)
                     
+                    var transparent_material4 = PhysicallyBasedMaterial()
+                    transparent_material4.blending = .transparent(opacity: .init(floatLiteral: 0.5))
                     
+                    if let mat4 = self.captureSphere.dot4?.findEntity(named: "simpBld_root") as? ModelEntity {
+                        mat4.model?.materials[0] = transparent_material4
+                    }
                     
-
-
                     count += 1
                     if count >= hummingbirdPos.count {
                         t.invalidate()
@@ -204,6 +244,30 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         }
     }
     
+    
+    func semiTransparentShader(_ value: Float) -> Material {
+
+        var material = PhysicallyBasedMaterial()
+        material.baseColor.texture = try! .init(.load(named: "image", in: nil))
+        material.blending = .transparent(opacity: .init(floatLiteral: value))
+
+        return material
+    }
+    
+//    private func shouldDeceaseScaleZero(startingVal : Int) -> Bool {
+//
+//
+//        let num_times = 10
+//        for i in 0 ... num_times {
+//
+//            if self.counter % (startingVal + i) == 0 {
+//                return true
+//            }
+//        }
+//
+//        return false
+//    }
+//
     private func loadJson(fileName: String) -> GameData? {
         if let url = Bundle.main.url(forResource: fileName, withExtension: "json") {
             if let data = try? Data(contentsOf: url) {
