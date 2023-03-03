@@ -147,93 +147,23 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                         captureSphereObj.move(to: captureSphereTransform, relativeTo: nil)
                     }
                     
-                    // trailing dot1 behind capture sphere
+                    // intialize trailing dot1 behind capture sphere
                     let dot1 = self.captureSphere.dot1
-                    
-                    // position
-                    let dot1x = (captureSphereCoordinate["x"] ?? 0) - 0.03
-                    let dot1y = (captureSphereCoordinate["y"] ?? 0) - 0.03
-                    let dot1z = (captureSphereCoordinate["z"] ?? 0) - 0.03
-                    
-                    let dot1Translation = SIMD3<Float>(x: dot1x, y: dot1y, z: dot1z)
-                    var dot1Transform = Transform(scale: .one, rotation: simd_quatf(), translation: dot1Translation)
-                    
-                    dot1?.move(to: dot1Transform, relativeTo: nil)
-                    
-                    // create material w/ transparency of 0.5
-                    var transparent_material = PhysicallyBasedMaterial()
-                    transparent_material.blending = .transparent(opacity: .init(floatLiteral: 0.7))
-                    
-                    // set this material to the first dot - in order to find the name of the dot do
-                    // let mat = self.captureSphere.findEntity(named: "Dot1") ; print(mat)
-                    if let mat1 = self.captureSphere.findEntity(named: "simpBld_root")
-                                                                          as? ModelEntity {
-
-                        mat1.model?.materials[0] = transparent_material
-
-                    }
-              
-                    
-                    // trailing dot2 behind capture sphere
                     let dot2 = self.captureSphere.dot2
-                    
-                    let dot2x = (captureSphereCoordinate["x"] ?? 0) - 0.05
-                    let dot2y = (captureSphereCoordinate["y"] ?? 0) - 0.05
-                    let dot2z = (captureSphereCoordinate["z"] ?? 0) - 0.05
-                    
-                    let dot2Translation = SIMD3<Float>(x: dot2x, y: dot2y, z: dot2z)
-                    var dot2Transform = Transform(scale: .one, rotation: simd_quatf(), translation: dot2Translation)
-                
-                    dot2?.move(to: dot2Transform, relativeTo: nil)
-                    
-                    
-                    // create material w/ transparency of 0.5
-                    var transparent_material2 = PhysicallyBasedMaterial()
-                    transparent_material2.blending = .transparent(opacity: .init(floatLiteral: 0.5))
-                    
-//                    simpBld_root
-                    if let mat2 = self.captureSphere.dot2?.findEntity(named: "simpBld_root") as? ModelEntity {
-                        mat2.model?.materials[0] = transparent_material2
-                    }
-                    
-                    // trailing dot3 behind capture sphere
                     let dot3 = self.captureSphere.dot3
-                    
-                    let dot3x = (captureSphereCoordinate["x"] ?? 0) - 0.07
-                    let dot3y = (captureSphereCoordinate["y"] ?? 0) - 0.07
-                    let dot3z = (captureSphereCoordinate["z"] ?? 0) - 0.07
-                    
-                    let dot3Translation = SIMD3<Float>(x: dot3x, y: dot3y, z: dot3z)
-                    var dot3Transform = Transform(scale: .one, rotation: simd_quatf(), translation: dot3Translation)
-
-                    dot3?.move(to: dot3Transform, relativeTo: nil)
-                    
-                    // create material w/ transparency of 0.5
-                    var transparent_material3 = PhysicallyBasedMaterial()
-                    transparent_material3.blending = .transparent(opacity: .init(floatLiteral: 0.5))
-                    
-                    if let mat3 = self.captureSphere.dot3?.findEntity(named: "simpBld_root") as? ModelEntity {
-                        mat3.model?.materials[0] = transparent_material3
-                    }
-                    
-                    // trailing dot4 behind capture sphere
                     let dot4 = self.captureSphere.dot4
                     
-                    let dot4x = (captureSphereCoordinate["x"] ?? 0) - 0.08
-                    let dot4y = (captureSphereCoordinate["y"] ?? 0) - 0.08
-                    let dot4z = (captureSphereCoordinate["z"] ?? 0) - 0.08
+                    // set the position of these trailing dots
+                    self.setPosition(captureSphereCoordinate: captureSphereCoordinate, DotNum: dot1!,  coordinatesBehind: 0.03)
+                    self.setPosition(captureSphereCoordinate: captureSphereCoordinate, DotNum: dot2!,  coordinatesBehind: 0.03)
+                    self.setPosition(captureSphereCoordinate: captureSphereCoordinate, DotNum: dot3!,  coordinatesBehind: 0.07)
+                    self.setPosition(captureSphereCoordinate: captureSphereCoordinate, DotNum: dot4!,  coordinatesBehind: 0.08)
                     
-                    let dot4Translation = SIMD3<Float>(x: dot4x, y: dot4y, z: dot4z)
-                    var dot4Transform = Transform(scale: .one, rotation: simd_quatf(), translation: dot4Translation)
-                    
-                    dot4?.move(to: dot4Transform, relativeTo: nil)
-                    
-                    var transparent_material4 = PhysicallyBasedMaterial()
-                    transparent_material4.blending = .transparent(opacity: .init(floatLiteral: 0.5))
-                    
-                    if let mat4 = self.captureSphere.dot4?.findEntity(named: "simpBld_root") as? ModelEntity {
-                        mat4.model?.materials[0] = transparent_material4
-                    }
+                    // set the transparency of these trailing dots
+                    self.setTransparency(TransparencyVal: 0.9, DotNum: dot1!)
+                    self.setTransparency(TransparencyVal: 0.8, DotNum: dot2!)
+                    self.setTransparency(TransparencyVal: 0.7, DotNum: dot3!)
+                    self.setTransparency(TransparencyVal: 0.5, DotNum: dot4!)
                     
                     count += 1
                     if count >= hummingbirdPos.count {
@@ -244,14 +174,30 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         }
     }
     
-    
-    func semiTransparentShader(_ value: Float) -> Material {
+    private func setPosition(captureSphereCoordinate: Dictionary<String, Float> , DotNum: Entity, coordinatesBehind: Float) {
 
-        var material = PhysicallyBasedMaterial()
-        material.baseColor.texture = try! .init(.load(named: "image", in: nil))
-        material.blending = .transparent(opacity: .init(floatLiteral: value))
+        let dotx = (captureSphereCoordinate["x"] ?? 0) - coordinatesBehind
+        let doty = (captureSphereCoordinate["y"] ?? 0) - coordinatesBehind
+        let dotz = (captureSphereCoordinate["z"] ?? 0) - coordinatesBehind
 
-        return material
+        let dotTranslation = SIMD3<Float>(x: dotx, y: doty, z: dotz)
+        var dotTransform = Transform(scale: .one, rotation: simd_quatf(), translation: dotTranslation)
+
+        DotNum.move(to: dotTransform, relativeTo: nil)
+
+
+    }
+
+    private func setTransparency(TransparencyVal: Float, DotNum: Entity) {
+        
+        
+        var transparent_material = PhysicallyBasedMaterial()
+        transparent_material.blending = .transparent(opacity: .init(floatLiteral: TransparencyVal))
+        
+        if let modelEntity = DotNum.findEntity(named: "simpBld_root") as? ModelEntity {
+            modelEntity.model?.materials[0] = transparent_material
+        }
+        
     }
     
 //    private func shouldDeceaseScaleZero(startingVal : Int) -> Bool {
