@@ -141,11 +141,9 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                     }
                     
                     var captureSphereCoordinate = captureSpherePos[count]
-                    if captureSphereCoordinate["x"] != nil && captureSphereCoordinate["y"] != nil && captureSphereCoordinate["z"] != nil {
-                        let captureSphereTranslation = SIMD3<Float>(x: captureSphereCoordinate["x"]!, y: captureSphereCoordinate["y"]!, z: captureSphereCoordinate["z"]!)
-                        let captureSphereTransform = Transform(scale: .one, rotation: simd_quatf(), translation: captureSphereTranslation)
-                        captureSphereObj.move(to: captureSphereTransform, relativeTo: nil)
-                    }
+                    
+                    // set position of capture sphere
+                    self.setPosition(captureSphereCoordinate: captureSphereCoordinate, object: captureSphereObj,  coordinatesBehind: 0.0)
                     
                     // intialize trailing dot1 behind capture sphere
                     let dot1 = self.captureSphere.dot1
@@ -154,16 +152,19 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                     let dot4 = self.captureSphere.dot4
                     
                     // set the position of these trailing dots
-                    self.setPosition(captureSphereCoordinate: captureSphereCoordinate, DotNum: dot1!,  coordinatesBehind: 0.03)
-                    self.setPosition(captureSphereCoordinate: captureSphereCoordinate, DotNum: dot2!,  coordinatesBehind: 0.03)
-                    self.setPosition(captureSphereCoordinate: captureSphereCoordinate, DotNum: dot3!,  coordinatesBehind: 0.07)
-                    self.setPosition(captureSphereCoordinate: captureSphereCoordinate, DotNum: dot4!,  coordinatesBehind: 0.08)
+                    self.setPosition(captureSphereCoordinate: captureSphereCoordinate, object: dot1!,  coordinatesBehind: 0.02)
+                    self.setPosition(captureSphereCoordinate: captureSphereCoordinate, object: dot2!,  coordinatesBehind: 0.03)
+                    self.setPosition(captureSphereCoordinate: captureSphereCoordinate, object: dot3!,  coordinatesBehind: 0.04)
+                    self.setPosition(captureSphereCoordinate: captureSphereCoordinate, object: dot4!,  coordinatesBehind: 0.05)
                     
                     // set the transparency of these trailing dots
-                    self.setTransparency(TransparencyVal: 0.9, DotNum: dot1!)
-                    self.setTransparency(TransparencyVal: 0.8, DotNum: dot2!)
-                    self.setTransparency(TransparencyVal: 0.7, DotNum: dot3!)
-                    self.setTransparency(TransparencyVal: 0.5, DotNum: dot4!)
+                    self.setTransparency(TransparencyVal: 0.8, DotNum: dot1!)
+                    self.setTransparency(TransparencyVal: 0.65, DotNum: dot2!)
+                    self.setTransparency(TransparencyVal: 0.5, DotNum: dot3!)
+                    self.setTransparency(TransparencyVal: 0.35, DotNum: dot4!)
+                    
+                    // increase scale of trailing dots
+                    self.multScaleBy2(object1: dot1!, object2: dot2!, object3: dot3!, object4: dot4!)
                     
                     count += 1
                     if count >= hummingbirdPos.count {
@@ -174,22 +175,30 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         }
     }
     
-    private func setPosition(captureSphereCoordinate: Dictionary<String, Float> , DotNum: Entity, coordinatesBehind: Float) {
+    private func multScaleBy2(object1: Entity, object2: Entity, object3: Entity, object4: Entity) {
+        
+        object1.transform.scale *= 2.0
+        object2.transform.scale *= 2.0
+        object3.transform.scale *= 2.0
+        object4.transform.scale *= 2.0
+        
+        
+    }
+    
+    private func setPosition(captureSphereCoordinate: Dictionary<String, Float> , object: Entity, coordinatesBehind: Float) {
 
-        let dotx = (captureSphereCoordinate["x"] ?? 0) - coordinatesBehind
-        let doty = (captureSphereCoordinate["y"] ?? 0) - coordinatesBehind
-        let dotz = (captureSphereCoordinate["z"] ?? 0) - coordinatesBehind
+        let posx = (captureSphereCoordinate["x"] ?? 0) - coordinatesBehind
+        let posy = (captureSphereCoordinate["y"] ?? 0) - coordinatesBehind
+        let posz = (captureSphereCoordinate["z"] ?? 0) - coordinatesBehind
 
-        let dotTranslation = SIMD3<Float>(x: dotx, y: doty, z: dotz)
-        var dotTransform = Transform(scale: .one, rotation: simd_quatf(), translation: dotTranslation)
+        let objectTranslation = SIMD3<Float>(x: posx, y: posy, z: posz)
+        var objectTransform = Transform(scale: .one, rotation: simd_quatf(), translation: objectTranslation)
 
-        DotNum.move(to: dotTransform, relativeTo: nil)
-
+        object.move(to: objectTransform, relativeTo: nil)
 
     }
 
     private func setTransparency(TransparencyVal: Float, DotNum: Entity) {
-        
         
         var transparent_material = PhysicallyBasedMaterial()
         transparent_material.blending = .transparent(opacity: .init(floatLiteral: TransparencyVal))
@@ -199,21 +208,7 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         }
         
     }
-    
-//    private func shouldDeceaseScaleZero(startingVal : Int) -> Bool {
-//
-//
-//        let num_times = 10
-//        for i in 0 ... num_times {
-//
-//            if self.counter % (startingVal + i) == 0 {
-//                return true
-//            }
-//        }
-//
-//        return false
-//    }
-//
+
     private func loadJson(fileName: String) -> GameData? {
         if let url = Bundle.main.url(forResource: fileName, withExtension: "json") {
             if let data = try? Data(contentsOf: url) {
