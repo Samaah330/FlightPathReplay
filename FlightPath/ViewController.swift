@@ -16,6 +16,8 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
     
     var counter = 0
     
+    var touchLocation: CGPoint!
+
     var hummingBird: HummingBird._HummingBird!
     var captureSphere: CaptureSphere._CaptureSphere!
     
@@ -57,8 +59,7 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        
+    
         // updates scene every frame interval
         subscription = arView.scene.subscribe(to: SceneEvents.Update.self) { [unowned self] in
             self.updateScene(on: $0)
@@ -84,12 +85,12 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
     }
     
     @objc func myviewTapped(_sender: UITapGestureRecognizer) {
-                   
+        
        // Ignore the tap if the user is editing a note.
        for note in Notes where note.isEditing { return }
        
        // Get the user's tap screen location.
-       let touchLocation = _sender.location(in: arView)
+       touchLocation = _sender.location(in: arView)
 
        // Cast a ray to check for its intersection with any planes
        // Cast a ray from the cameras origin through the touch location to check for intersection with any real worl surfaces along the ray
@@ -126,17 +127,23 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
 
     
     @IBAction func start(_ sender: Any) {
+        var slow_counter = 0
         var count = 0
         let hummingbirdPos = jsonData.hummingbirdPos
         let captureSpherePos = jsonData.spherePos
         
         if let hummingBirdObj = self.hummingBird!.hummingBird {
             if let captureSphereObj = self.captureSphere!.captureSphere {
-                var timer = Timer.scheduledTimer(withTimeInterval: 1/60, repeats: true){ t in
+                
+                // change timer back to 1/60 later
+                var timer = Timer.scheduledTimer(withTimeInterval: 1/500, repeats: true){ t in
                     var hummingBirdCoordinate = hummingbirdPos[count]
                     if hummingBirdCoordinate["x"] != nil && hummingBirdCoordinate["y"] != nil && hummingBirdCoordinate["z"] != nil {
                         let hummingBirdTranslation = SIMD3<Float>(x: hummingBirdCoordinate["x"]!, y: hummingBirdCoordinate["y"]!, z: hummingBirdCoordinate["z"]!)
-                        let hummingBirdTransform = Transform(scale: .one, rotation: simd_quatf(), translation: hummingBirdTranslation)
+                        var hummingBirdTransform = Transform(scale: .one, rotation: simd_quatf(), translation: hummingBirdTranslation)
+                        
+                        // multiple the scale of the hummingbird by 50 since the model being used is very small
+                        hummingBirdTransform.scale *= 50
                         hummingBirdObj.move(to: hummingBirdTransform, relativeTo: nil)
                     }
                     
@@ -162,17 +169,33 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                     self.setTransparency(TransparencyVal: 0.65, DotNum: dot2!)
                     self.setTransparency(TransparencyVal: 0.5, DotNum: dot3!)
                     self.setTransparency(TransparencyVal: 0.35, DotNum: dot4!)
-                    
+                                   
+                    // this calls the function that is triggered when you tap on the capture sphere object
+                    self.captureSphere.actions.colorChange.onAction = self.handleTapOnEntity(_:)
+    
                     // increase scale of trailing dots
                     self.multScaleBy2(object1: dot1!, object2: dot2!, object3: dot3!, object4: dot4!)
                     
-                    count += 1
+                    slow_counter += 1
+                    
+                    // so that it moves slower, just for right now
+                    if (slow_counter % 3 == 0) {
+                        count += 1
+                    }
+                    
                     if count >= hummingbirdPos.count {
                         t.invalidate()
                     }
                 }
             }
         }
+    }
+    
+    // function that is called when you tap on the capture sphere
+    func handleTapOnEntity(_ entity: Entity?) {
+        guard let entity = entity else { return }
+        
+        setColor()
     }
     
     private func multScaleBy2(object1: Entity, object2: Entity, object3: Entity, object4: Entity) {
@@ -196,6 +219,24 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
 
         object.move(to: objectTransform, relativeTo: nil)
 
+    }
+    
+    private func setColor() {
+        
+        var color_material = PhysicallyBasedMaterial()
+        
+        // how you change the color of an object
+        color_material.baseColor = .init(tint: .blue)
+        
+        if let modelEntity = self.captureSphere.captureSphere?.findEntity(named: "simpBld_root") as? ModelEntity {
+            modelEntity.model?.materials[0] = color_material
+        }
+        
+    
+//        if touchObject == captureSphereGround {
+//            print("color change")
+//        }
+        
     }
 
     private func setTransparency(TransparencyVal: Float, DotNum: Entity) {

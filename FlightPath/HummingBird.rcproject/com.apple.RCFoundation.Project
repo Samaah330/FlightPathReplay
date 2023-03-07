@@ -21,124 +21,106 @@
               "material" : "concrete",
               "overrides" : {
                 "children" : {
+                  "0DE3D271-A212-4937-89F0-BC44F17880AB" : null,
+                  "2C2B134D-757B-43D6-A537-135224A5E86D" : null,
+                  "03F870C7-FE3A-47A6-AC0A-FE42234AAB03" : null,
                   "4A213441-135C-450E-8EF8-1A4EAB267C1D" : null,
                   "7F5F1ADC-E5E4-4EF5-A5B5-FC43B071FFA5" : null,
+                  "42DF0976-541F-47B1-A908-C52109FB6086" : null,
+                  "428C9CE1-F5A0-419A-83E3-71CAB3130FD9" : null,
                   "442B2422-EE9B-479C-A923-DB58642A317E" : null,
                   "632E476F-1E55-4E30-9723-1C51DD2E8B89" : null,
-                  "17921988-F35C-4931-9A67-4968D71242F2" : {
-                    "overrides" : {
-                      "arguments" : [
-                        [
-                          "item",
-                          {
-                            "typeName" : "String",
-                            "value" : "Rocket Toy"
-                          }
-                        ],
-                        [
-                          "style",
-                          {
-                            "typeName" : "String",
-                            "value" : "Stylized"
-                          }
-                        ]
-                      ],
-                      "children" : {
-                        "item" : {
-                          "overrides" : {
-                            "factory" : null,
-                            "runtimeAttributes" : [
-                              [
-                                "RuntimeIdentifier",
-                                {
-                                  "typeName" : "UUID",
-                                  "value" : "4FCC8922-1902-4F75-B522-518ED1C541DC"
-                                }
-                              ]
-                            ]
-                          }
-                        }
-                      },
-                      "factory" : {
-                        "identifier" : "com.apple.rc.af.ToyRocket.0ff100d1-1ee4-4d77-9e16-b21d1a031f5e",
-                        "version" : "1.0"
-                      },
-                      "runtimeAttributes" : [
-                        [
-                          "RuntimeIdentifier",
-                          {
-                            "typeName" : "UUID",
-                            "value" : "B19C7B61-3F99-4A04-AB82-FDDD8967EF0D"
-                          }
-                        ]
-                      ]
-                    },
-                    "transform" : {
-                      "matrix" : [
-                        0.34613019227981567,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0.34613019227981567,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0.34613019227981567,
-                        0,
-                        0.20348571240901947,
-                        0.0034545361995697021,
-                        0.041377425193786621,
-                        1
-                      ]
-                    }
-                  },
+                  "44091C29-1DF7-4034-89BD-DF16D8356614" : null,
+                  "17921988-F35C-4931-9A67-4968D71242F2" : null,
+                  "A0A4A5A6-6231-4046-8378-BBCECA3B751B" : null,
+                  "AF5BC730-83E3-4285-8F9E-3191940C72A2" : null,
                   "B91C7CA3-4AB1-4253-9A84-07383168A8A8" : null,
-                  "CD0A160E-B950-4CBB-92EB-A2F762D19B5D" : {
+                  "BC7D237B-4C49-4C8D-B8B1-B20E37CDB883" : null,
+                  "BCB47C37-77B5-4D78-8154-B56F177828CD" : null,
+                  "C9137F8B-2508-4D34-A592-0F4F02518F2C" : null,
+                  "CD0A160E-B950-4CBB-92EB-A2F762D19B5D" : null,
+                  "CEA15628-320E-4A9E-97FE-7AD6A73FA633" : null,
+                  "D38B9941-7877-4419-9FA9-145E86DE546A" : {
                     "overrides" : {
-                      "arguments" : [
-                        [
-                          "item",
-                          {
-                            "typeName" : "String",
-                            "value" : "Biplane Toy"
-                          }
-                        ],
-                        [
-                          "style",
-                          {
-                            "typeName" : "String",
-                            "value" : "Stylized"
-                          }
-                        ]
-                      ],
                       "children" : {
-                        "item" : {
+                        "USDScene" : {
                           "overrides" : {
-                            "factory" : null,
+                            "arguments" : [
+                              [
+                                "includeSceneScaling",
+                                {
+                                  "typeName" : "Bool",
+                                  "value" : false
+                                }
+                              ],
+                              [
+                                "subpath",
+                                {
+                                  "typeName" : "String",
+                                  "value" : ""
+                                }
+                              ],
+                              [
+                                "url",
+                                {
+                                  "typeName" : "String",
+                                  "value" : "model:92503c6e219bdf760eec0227de121798\/d33405f9-57c3-435d-b39e-e4a0ea4f9d3a%20(1).usdz"
+                                }
+                              ],
+                              [
+                                "withDescendants",
+                                {
+                                  "typeName" : "Bool",
+                                  "value" : true
+                                }
+                              ]
+                            ],
+                            "factory" : {
+                              "identifier" : "com.apple.af.FileImportAssetFactory",
+                              "version" : "0.0"
+                            },
                             "runtimeAttributes" : [
                               [
                                 "RuntimeIdentifier",
                                 {
                                   "typeName" : "UUID",
-                                  "value" : "0D91AB48-30ED-47DC-962F-4D3C3494DAD1"
+                                  "value" : "C47BB721-AE2E-4629-8EA1-92783731C67F"
                                 }
                               ]
+                            ]
+                          },
+                          "transform" : {
+                            "matrix" : [
+                              1,
+                              0,
+                              0,
+                              0,
+                              0,
+                              1,
+                              0,
+                              0,
+                              0,
+                              0,
+                              1,
+                              0,
+                              0,
+                              0,
+                              0,
+                              1
                             ]
                           }
                         }
                       },
                       "factory" : {
-                        "identifier" : "com.apple.rc.af.ToyBiplane.cb29dbdd-e4b3-4fe7-ba22-7bec63300260",
-                        "version" : "1.0"
+                        "identifier" : "com.apple.af.Group",
+                        "version" : "0.0"
                       },
                       "runtimeAttributes" : [
                         [
                           "RuntimeIdentifier",
                           {
                             "typeName" : "UUID",
-                            "value" : "7DEA5702-08F6-4455-A79D-A53D02B5872B"
+                            "value" : "0DF8B0A0-9884-46D0-BEFD-3A38334B0F98"
                           }
                         ],
                         [
@@ -152,25 +134,28 @@
                     },
                     "transform" : {
                       "matrix" : [
-                        3.4028234663852886e+38,
+                        10,
                         0,
                         0,
                         0,
                         0,
-                        3.4028234663852886e+38,
+                        10,
                         0,
                         0,
                         0,
                         0,
-                        3.4028234663852886e+38,
+                        10,
                         0,
-                        0,
-                        0,
-                        0,
+                        -0.0024520307779312134,
+                        0.015738250687718391,
+                        -0.046460449695587158,
                         1
                       ]
                     }
-                  }
+                  },
+                  "D78A2851-0670-4A60-A268-CEE73E1DC781" : null,
+                  "D612792E-9689-4060-A5C2-105D14746477" : null,
+                  "F4BC656B-44ED-49D3-A72D-029764DD90EF" : null
                 },
                 "factory" : null,
                 "runtimeAttributes" : [
@@ -187,21 +172,21 @@
               "title" : "hummingBird",
               "viewTransform" : {
                 "cameraTransform" : [
-                  0.99999994039535522,
+                  0.98537874221801758,
+                  -2.8231429638481131e-08,
+                  0.17037847638130188,
                   0,
+                  0.056182041764259338,
+                  0.94406890869140625,
+                  -0.32492703199386597,
                   0,
+                  -0.16084901988506317,
+                  0.32974830269813538,
+                  0.93026536703109741,
                   0,
-                  0,
-                  0.8075486421585083,
-                  -0.58980107307434082,
-                  0,
-                  0,
-                  0.58980107307434082,
-                  0.8075486421585083,
-                  0,
-                  0,
-                  1.135667085647583,
-                  1.5549418926239014,
+                  0.1764177680015564,
+                  0.31836387515068054,
+                  0.89869576692581177,
                   1
                 ],
                 "sceneTransform" : [
