@@ -21,6 +21,8 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
     var hummingBird: HummingBird._HummingBird!
     var captureSphere: CaptureSphere._CaptureSphere!
     
+    var touchedSphere = false
+    
 //    if let Dots = try? Dots.loadBox() {
 //        let box = Dots.Dots
 //        // Do something with box.
@@ -69,10 +71,18 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         hummingBird = try! HummingBird.load_HummingBird()
         captureSphere = try! CaptureSphere.load_CaptureSphere()
         
-        
         // Add the box anchor to the scene
         arView.scene.anchors.append(hummingBird!)
         arView.scene.anchors.append(captureSphere!)
+        
+        // In the beginning, make sure you cannot see trailing dots behind capture sphere
+        self.setTransparency(TransparencyVal: 0, DotNum: captureSphere.dot1!)
+        self.setTransparency(TransparencyVal: 0, DotNum: captureSphere.dot2!)
+        self.setTransparency(TransparencyVal: 0, DotNum: captureSphere.dot3!)
+        self.setTransparency(TransparencyVal: 0, DotNum: captureSphere.dot4!)
+        
+        // increase the size of the hummingbird in the beginning
+        hummingBird.transform.scale *= 50
         
         jsonData = loadJson(fileName: "data")!
         
@@ -137,38 +147,67 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                 
                 // change timer back to 1/60 later
                 var timer = Timer.scheduledTimer(withTimeInterval: 1/500, repeats: true){ t in
-                    var hummingBirdCoordinate = hummingbirdPos[count]
-                    if hummingBirdCoordinate["x"] != nil && hummingBirdCoordinate["y"] != nil && hummingBirdCoordinate["z"] != nil {
-                        let hummingBirdTranslation = SIMD3<Float>(x: hummingBirdCoordinate["x"]!, y: hummingBirdCoordinate["y"]!, z: hummingBirdCoordinate["z"]!)
-                        var hummingBirdTransform = Transform(scale: .one, rotation: simd_quatf(), translation: hummingBirdTranslation)
-                        
-                        // multiple the scale of the hummingbird by 50 since the model being used is very small
-                        hummingBirdTransform.scale *= 50
-                        hummingBirdObj.move(to: hummingBirdTransform, relativeTo: nil)
-                    }
                     
+                    // get position of hummingbird and capture sphere
+                    var hummingBirdCoordinate = hummingbirdPos[count]
                     var captureSphereCoordinate = captureSpherePos[count]
                     
-                    // set position of capture sphere
-                    self.setPosition(captureSphereCoordinate: captureSphereCoordinate, object: captureSphereObj,  coordinatesBehind: 0.0)
+                    // previous coordinates
+                    var prev1HummingBirdCoordinate = hummingBirdCoordinate
+                    var prev1CaptureSphereCoordinate = captureSphereCoordinate
                     
-                    // intialize trailing dot1 behind capture sphere
+                    var prev2HummingBirdCoordinate = hummingBirdCoordinate
+                    var prev2CaptureSphereCoordinate = captureSphereCoordinate
+                    
+                    var prev3HummingBirdCoordinate = hummingBirdCoordinate
+                    var prev3CaptureSphereCoordinate = captureSphereCoordinate
+                    
+                    var prev4HummingBirdCoordinate = hummingBirdCoordinate
+                    var prev4CaptureSphereCoordinate = captureSphereCoordinate
+                    
+                    if (count > 2) {
+                        prev1HummingBirdCoordinate = hummingbirdPos[count - 3]
+                        prev1CaptureSphereCoordinate = captureSpherePos[count - 3]
+                    }
+                    
+                    if (count > 4) {
+                        prev2HummingBirdCoordinate = hummingbirdPos[count - 5]
+                        prev2CaptureSphereCoordinate = captureSpherePos[count - 5]
+                    }
+                    
+                    if (count > 6) {
+                        prev3HummingBirdCoordinate = hummingbirdPos[count - 7]
+                        prev3CaptureSphereCoordinate = captureSpherePos[count - 7]
+                    }
+                    
+                    if (count > 8) {
+                        prev4HummingBirdCoordinate = hummingbirdPos[count - 9]
+                        prev4CaptureSphereCoordinate = captureSpherePos[count - 9]
+                    }
+                
+                    // set position of hummingbird
+                    self.setPosition(objectCoordinate: hummingBirdCoordinate, object: hummingBirdObj, incScale: true)
+                        
+                    // set position of capture sphere
+                    self.setPosition(objectCoordinate: captureSphereCoordinate, object: captureSphereObj, incScale: false)
+                    
+                    // intialize trailing dots behind capture sphere
                     let dot1 = self.captureSphere.dot1
                     let dot2 = self.captureSphere.dot2
                     let dot3 = self.captureSphere.dot3
                     let dot4 = self.captureSphere.dot4
                     
                     // set the position of these trailing dots
-                    self.setPosition(captureSphereCoordinate: captureSphereCoordinate, object: dot1!,  coordinatesBehind: 0.02)
-                    self.setPosition(captureSphereCoordinate: captureSphereCoordinate, object: dot2!,  coordinatesBehind: 0.03)
-                    self.setPosition(captureSphereCoordinate: captureSphereCoordinate, object: dot3!,  coordinatesBehind: 0.04)
-                    self.setPosition(captureSphereCoordinate: captureSphereCoordinate, object: dot4!,  coordinatesBehind: 0.05)
+                    self.setPosition(objectCoordinate: prev1CaptureSphereCoordinate, object: dot1!, incScale: false)
+                    self.setPosition(objectCoordinate: prev2CaptureSphereCoordinate, object: dot2!, incScale: false)
+                    self.setPosition(objectCoordinate: prev3CaptureSphereCoordinate, object: dot3!, incScale: false)
+                    self.setPosition(objectCoordinate: prev4CaptureSphereCoordinate, object: dot4!, incScale: false)
                     
                     // set the transparency of these trailing dots
                     self.setTransparency(TransparencyVal: 0.8, DotNum: dot1!)
-                    self.setTransparency(TransparencyVal: 0.65, DotNum: dot2!)
-                    self.setTransparency(TransparencyVal: 0.5, DotNum: dot3!)
-                    self.setTransparency(TransparencyVal: 0.35, DotNum: dot4!)
+                    self.setTransparency(TransparencyVal: 0.6, DotNum: dot2!)
+                    self.setTransparency(TransparencyVal: 0.4, DotNum: dot3!)
+                    self.setTransparency(TransparencyVal: 0.2, DotNum: dot4!)
                                    
                     // this calls the function that is triggered when you tap on the capture sphere object
                     self.captureSphere.actions.colorChange.onAction = self.handleTapOnEntity(_:)
@@ -195,7 +234,11 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
     func handleTapOnEntity(_ entity: Entity?) {
         guard let entity = entity else { return }
         
-        setColor()
+        touchedSphere = true
+        
+        setColor(DotNum: self.captureSphere.captureSphere!)
+        
+        
     }
     
     private func multScaleBy2(object1: Entity, object2: Entity, object3: Entity, object4: Entity) {
@@ -208,34 +251,54 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         
     }
     
-    private func setPosition(captureSphereCoordinate: Dictionary<String, Float> , object: Entity, coordinatesBehind: Float) {
+    private func setPosition(objectCoordinate: Dictionary<String, Float> , object: Entity, incScale: Bool) {
 
-        let posx = (captureSphereCoordinate["x"] ?? 0) - coordinatesBehind
-        let posy = (captureSphereCoordinate["y"] ?? 0) - coordinatesBehind
-        let posz = (captureSphereCoordinate["z"] ?? 0) - coordinatesBehind
+        let posx = (objectCoordinate["x"] ?? 0)
+        let posy = (objectCoordinate["y"] ?? 0)
+        let posz = (objectCoordinate["z"] ?? 0)
 
         let objectTranslation = SIMD3<Float>(x: posx, y: posy, z: posz)
         var objectTransform = Transform(scale: .one, rotation: simd_quatf(), translation: objectTranslation)
 
+        if (incScale) {
+            
+            // multiple the scale of the hummingbird by 50 since the model being used is very small
+            objectTransform.scale *= 50
+            
+        }
+        
         object.move(to: objectTransform, relativeTo: nil)
 
     }
     
-    private func setColor() {
+    private func setColor(DotNum: Entity) {
         
         var color_material = PhysicallyBasedMaterial()
         
         // how you change the color of an object
         color_material.baseColor = .init(tint: .blue)
         
-        if let modelEntity = self.captureSphere.captureSphere?.findEntity(named: "simpBld_root") as? ModelEntity {
+        if let modelEntity = DotNum.findEntity(named: "simpBld_root") as? ModelEntity {
             modelEntity.model?.materials[0] = color_material
         }
         
-    
-//        if touchObject == captureSphereGround {
-//            print("color change")
+//        if let modelEntity = self.captureSphere.dot1!.findEntity(named: "simpBld_root") as? ModelEntity {
+//
+//            modelEntity.model?.materials[0] = color_material
 //        }
+//
+//        if let modelEntity = self.captureSphere.dot2!.findEntity(named: "simpBld_root") as? ModelEntity {
+//            modelEntity.model?.materials[0] = color_material
+//        }
+//
+//        if let modelEntity = self.captureSphere.dot3!.findEntity(named: "simpBld_root") as? ModelEntity {
+//            modelEntity.model?.materials[0] = color_material
+//        }
+//
+//        if let modelEntity = self.captureSphere.dot4!.findEntity(named: "simpBld_root") as? ModelEntity {
+//            modelEntity.model?.materials[0] = color_material
+//        }
+        
         
     }
 
@@ -243,6 +306,10 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         
         var transparent_material = PhysicallyBasedMaterial()
         transparent_material.blending = .transparent(opacity: .init(floatLiteral: TransparencyVal))
+        
+//        if (touchedSphere == true) {
+//            transparent_material.baseColor = .init(tint: .blue)
+//        }
         
         if let modelEntity = DotNum.findEntity(named: "simpBld_root") as? ModelEntity {
             modelEntity.model?.materials[0] = transparent_material
