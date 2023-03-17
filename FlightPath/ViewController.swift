@@ -9,6 +9,8 @@ import UIKit
 import RealityKit
 import ARKit
 import Combine
+import Darwin
+
 
 class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, ARCoachingOverlayViewDelegate {
     
@@ -21,7 +23,20 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
     var hummingBird: HummingBird._HummingBird!
     var captureSphere: CaptureSphere._CaptureSphere!
     
-    var touchedSphere = false
+    
+    // maximum distance between the sphere and the hummingbird
+    var maxDistance : Float = 0.0 // 2.14949
+    var threshold = 2.14949
+
+
+   // var device: Device._Device!
+    
+//    if let boxScene = try? Device.loadBox() {
+//        let Device = boxScene.Device
+//        // Do something with box.
+//    }
+    
+    var blueSphere = false
     
 //    if let Dots = try? Dots.loadBox() {
 //        let box = Dots.Dots
@@ -80,6 +95,11 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         self.setTransparency(TransparencyVal: 0, DotNum: captureSphere.dot2!)
         self.setTransparency(TransparencyVal: 0, DotNum: captureSphere.dot3!)
         self.setTransparency(TransparencyVal: 0, DotNum: captureSphere.dot4!)
+        self.setTransparency(TransparencyVal: 0, DotNum: captureSphere.dot5!)
+        self.setTransparency(TransparencyVal: 0, DotNum: captureSphere.dot6!)
+        self.setTransparency(TransparencyVal: 0, DotNum: captureSphere.dot7!)
+        self.setTransparency(TransparencyVal: 0, DotNum: captureSphere.dot8!)
+        self.setTransparency(TransparencyVal: 0, DotNum: captureSphere.dot9!)
         
         // increase the size of the hummingbird in the beginning
         hummingBird.transform.scale *= 50
@@ -92,6 +112,9 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         arView.session.delegate = self
              
         overlayUISetup()
+        
+        // threshold is 1 / 3 of maximum distance
+        threshold = threshold / 3
     }
     
     @objc func myviewTapped(_sender: UITapGestureRecognizer) {
@@ -141,6 +164,7 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         var count = 0
         let hummingbirdPos = jsonData.hummingbirdPos
         let captureSpherePos = jsonData.spherePos
+        let devicePos = jsonData.camPos
         
         if let hummingBirdObj = self.hummingBird!.hummingBird {
             if let captureSphereObj = self.captureSphere!.captureSphere {
@@ -148,9 +172,10 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                 // change timer back to 1/60 later
                 var timer = Timer.scheduledTimer(withTimeInterval: 1/500, repeats: true){ t in
                     
-                    // get position of hummingbird and capture sphere
+                    // get position of hummingbird, capture sphere, & device
                     var hummingBirdCoordinate = hummingbirdPos[count]
                     var captureSphereCoordinate = captureSpherePos[count]
+                    var deviceCoordinate = devicePos[count]
                     
                     // previous coordinates
                     var prev1HummingBirdCoordinate = hummingBirdCoordinate
@@ -165,6 +190,22 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                     var prev4HummingBirdCoordinate = hummingBirdCoordinate
                     var prev4CaptureSphereCoordinate = captureSphereCoordinate
                     
+                    var prev5HummingBirdCoordinate = hummingBirdCoordinate
+                    var prev5CaptureSphereCoordinate = captureSphereCoordinate
+                    
+                    var prev6HummingBirdCoordinate = hummingBirdCoordinate
+                    var prev6CaptureSphereCoordinate = captureSphereCoordinate
+                    
+                    var prev7HummingBirdCoordinate = hummingBirdCoordinate
+                    var prev7CaptureSphereCoordinate = captureSphereCoordinate
+                    
+                    var prev8HummingBirdCoordinate = hummingBirdCoordinate
+                    var prev8CaptureSphereCoordinate = captureSphereCoordinate
+                    
+                    var prev9HummingBirdCoordinate = hummingBirdCoordinate
+                    var prev9CaptureSphereCoordinate = captureSphereCoordinate
+                    
+        
                     if (count > 2) {
                         prev1HummingBirdCoordinate = hummingbirdPos[count - 3]
                         prev1CaptureSphereCoordinate = captureSpherePos[count - 3]
@@ -184,6 +225,31 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                         prev4HummingBirdCoordinate = hummingbirdPos[count - 9]
                         prev4CaptureSphereCoordinate = captureSpherePos[count - 9]
                     }
+                    
+                    if (count > 10) {
+                        prev5HummingBirdCoordinate = hummingbirdPos[count - 11]
+                        prev5CaptureSphereCoordinate = captureSpherePos[count - 11]
+                    }
+                    
+                    if (count > 12) {
+                        prev6HummingBirdCoordinate = hummingbirdPos[count - 13]
+                        prev6CaptureSphereCoordinate = captureSpherePos[count - 13]
+                    }
+                    
+                    if (count > 14) {
+                        prev7HummingBirdCoordinate = hummingbirdPos[count - 15]
+                        prev7CaptureSphereCoordinate = captureSpherePos[count - 15]
+                    }
+                    
+                    if (count > 16) {
+                        prev8HummingBirdCoordinate = hummingbirdPos[count - 17]
+                        prev8CaptureSphereCoordinate = captureSpherePos[count - 17]
+                    }
+                    
+                    if (count > 18) {
+                        prev9HummingBirdCoordinate = hummingbirdPos[count - 19]
+                        prev9CaptureSphereCoordinate = captureSpherePos[count - 19]
+                    }
                 
                     // set position of hummingbird
                     self.setPosition(objectCoordinate: hummingBirdCoordinate, object: hummingBirdObj, incScale: true)
@@ -191,29 +257,50 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                     // set position of capture sphere
                     self.setPosition(objectCoordinate: captureSphereCoordinate, object: captureSphereObj, incScale: false)
                     
+                    // set position of device
+                    self.setPosition(objectCoordinate: deviceCoordinate, object: self.hummingBird.device!, incScale: false)
+                    
+    
                     // intialize trailing dots behind capture sphere
                     let dot1 = self.captureSphere.dot1
                     let dot2 = self.captureSphere.dot2
                     let dot3 = self.captureSphere.dot3
                     let dot4 = self.captureSphere.dot4
+                    let dot5 = self.captureSphere.dot5
+                    let dot6 = self.captureSphere.dot6
+                    let dot7 = self.captureSphere.dot7
+                    let dot8 = self.captureSphere.dot8
+                    let dot9 = self.captureSphere.dot9
                     
                     // set the position of these trailing dots
                     self.setPosition(objectCoordinate: prev1CaptureSphereCoordinate, object: dot1!, incScale: false)
                     self.setPosition(objectCoordinate: prev2CaptureSphereCoordinate, object: dot2!, incScale: false)
                     self.setPosition(objectCoordinate: prev3CaptureSphereCoordinate, object: dot3!, incScale: false)
                     self.setPosition(objectCoordinate: prev4CaptureSphereCoordinate, object: dot4!, incScale: false)
+                    self.setPosition(objectCoordinate: prev5CaptureSphereCoordinate, object: dot5!, incScale: false)
+                    self.setPosition(objectCoordinate: prev6CaptureSphereCoordinate, object: dot6!, incScale: false)
+                    self.setPosition(objectCoordinate: prev7CaptureSphereCoordinate, object: dot7!, incScale: false)
+                    self.setPosition(objectCoordinate: prev8CaptureSphereCoordinate, object: dot8!, incScale: false)
+                    self.setPosition(objectCoordinate: prev9CaptureSphereCoordinate, object: dot9!, incScale: false)
                     
                     // set the transparency of these trailing dots
-                    self.setTransparency(TransparencyVal: 0.8, DotNum: dot1!)
-                    self.setTransparency(TransparencyVal: 0.6, DotNum: dot2!)
-                    self.setTransparency(TransparencyVal: 0.4, DotNum: dot3!)
-                    self.setTransparency(TransparencyVal: 0.2, DotNum: dot4!)
+                    self.setTransparency(TransparencyVal: 0.9, DotNum: dot1!)
+                    self.setTransparency(TransparencyVal: 0.8, DotNum: dot2!)
+                    self.setTransparency(TransparencyVal: 0.7, DotNum: dot3!)
+                    self.setTransparency(TransparencyVal: 0.6, DotNum: dot4!)
+                    self.setTransparency(TransparencyVal: 0.5, DotNum: dot5!)
+                    self.setTransparency(TransparencyVal: 0.4, DotNum: dot6!)
+                    self.setTransparency(TransparencyVal: 0.3, DotNum: dot7!)
+                    self.setTransparency(TransparencyVal: 0.2, DotNum: dot8!)
+                    self.setTransparency(TransparencyVal: 0.1, DotNum: dot9!)
                                    
                     // this calls the function that is triggered when you tap on the capture sphere object
                     self.captureSphere.actions.colorChange.onAction = self.handleTapOnEntity(_:)
     
                     // increase scale of trailing dots
-                    self.multScaleBy2(object1: dot1!, object2: dot2!, object3: dot3!, object4: dot4!)
+                    self.multScaleBy2(object1: dot1!, object2: dot2!, object3: dot3!, object4: dot4!,   object5: dot5!, object6: dot6!, object7: dot7!, object8: dot8!, object9: dot9!)
+                    
+                    self.findDistance(objectCoordinate1: hummingBirdCoordinate, objectCoordinate2: captureSphereCoordinate)
                     
                     slow_counter += 1
                     
@@ -230,24 +317,70 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         }
     }
     
+    // function finds distance between two objects
+    private func findDistance(objectCoordinate1: Dictionary<String, Float>, objectCoordinate2: Dictionary<String, Float>) {
+        
+        let x1 = (objectCoordinate1["x"] ?? 0)
+        let y1 = (objectCoordinate1["y"] ?? 0)
+        let z1 = (objectCoordinate1["z"] ?? 0)
+        
+        let x2 = (objectCoordinate2["x"] ?? 0)
+        let y2 = (objectCoordinate2["y"] ?? 0)
+        let z2 = (objectCoordinate2["z"] ?? 0)
+        
+        let xdiff = abs(x1 - x2)
+        let ydiff = abs(y1 - y2)
+        let zdiff = abs(z1 - z2)
+        
+        let xpow = pow(xdiff, 2)
+        let ypow = pow(ydiff, 2)
+        let zpow = pow(zdiff, 2)
+        
+        // calculate distance
+        let distance = sqrt(zpow + ypow + zpow)
+        
+        // if capture sphere and hummingbird are within a certain distance then capture sphere changes color
+        if (Float(distance) < Float(threshold)) {
+            setColorBlue()
+        }
+        
+        else {
+            setColorGray()
+        }
+        
+        // keep track of and update max distance
+        if (Float(distance) > Float(maxDistance)) {
+            maxDistance = Float(distance)
+            
+            print(maxDistance)
+        }
+        
+        
+     
+    }
+    
     // function that is called when you tap on the capture sphere
     func handleTapOnEntity(_ entity: Entity?) {
         guard let entity = entity else { return }
         
-        touchedSphere = true
+        blueSphere = true
         
-        setColor(DotNum: self.captureSphere.captureSphere!)
+        setColorBlue()
         
         
     }
     
-    private func multScaleBy2(object1: Entity, object2: Entity, object3: Entity, object4: Entity) {
+    private func multScaleBy2(object1: Entity, object2: Entity, object3: Entity, object4: Entity, object5: Entity, object6: Entity, object7: Entity, object8: Entity, object9: Entity) {
         
         object1.transform.scale *= 2.0
         object2.transform.scale *= 2.0
         object3.transform.scale *= 2.0
         object4.transform.scale *= 2.0
-        
+        object5.transform.scale *= 2.0
+        object6.transform.scale *= 2.0
+        object7.transform.scale *= 2.0
+        object8.transform.scale *= 2.0
+        object9.transform.scale *= 2.0
         
     }
     
@@ -270,15 +403,31 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         object.move(to: objectTransform, relativeTo: nil)
 
     }
+    private func setColorGray() {
+        
+        blueSphere = false
+        
+        var color_material = PhysicallyBasedMaterial()
+        
+        // how you change the color of an object
+        color_material.baseColor = .init(tint: .lightGray)
+        
+        if let modelEntity = self.captureSphere.captureSphere!.findEntity(named: "simpBld_root") as? ModelEntity {
+            modelEntity.model?.materials[0] = color_material
+        }
+        
+    }
     
-    private func setColor(DotNum: Entity) {
+    private func setColorBlue() {
+        
+        blueSphere = true
         
         var color_material = PhysicallyBasedMaterial()
         
         // how you change the color of an object
         color_material.baseColor = .init(tint: .blue)
         
-        if let modelEntity = DotNum.findEntity(named: "simpBld_root") as? ModelEntity {
+        if let modelEntity = self.captureSphere.captureSphere!.findEntity(named: "simpBld_root") as? ModelEntity {
             modelEntity.model?.materials[0] = color_material
         }
         
@@ -305,11 +454,13 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
     private func setTransparency(TransparencyVal: Float, DotNum: Entity) {
         
         var transparent_material = PhysicallyBasedMaterial()
+        
+        if (blueSphere == true) {
+            transparent_material.baseColor = .init(tint: .blue)
+        }
+        
         transparent_material.blending = .transparent(opacity: .init(floatLiteral: TransparencyVal))
         
-//        if (touchedSphere == true) {
-//            transparent_material.baseColor = .init(tint: .blue)
-//        }
         
         if let modelEntity = DotNum.findEntity(named: "simpBld_root") as? ModelEntity {
             modelEntity.model?.materials[0] = transparent_material
