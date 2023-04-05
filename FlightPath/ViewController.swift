@@ -158,13 +158,14 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
        
     }
 
-    
+
     @IBAction func start(_ sender: Any) {
         var slow_counter = 0
         var count = 0
         let hummingbirdPos = jsonData.hummingbirdPos
         let captureSpherePos = jsonData.spherePos
         let devicePos = jsonData.camPos
+        let deviceRot = jsonData.deviceRotation
         
         if let hummingBirdObj = self.hummingBird!.hummingBird {
             if let captureSphereObj = self.captureSphere!.captureSphere {
@@ -176,6 +177,7 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                     var hummingBirdCoordinate = hummingbirdPos[count]
                     var captureSphereCoordinate = captureSpherePos[count]
                     var deviceCoordinate = devicePos[count]
+                    var deviceRotCoordinate = deviceRot[count]
                     
                     // previous coordinates
                     var prev1HummingBirdCoordinate = hummingBirdCoordinate
@@ -260,6 +262,11 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                     // set position of device
                     self.setPosition(objectCoordinate: deviceCoordinate, object: self.hummingBird.device!, incScale: false)
                     
+                    // set rotation of device
+                    self.setRotation(object: self.hummingBird.device!, rotation: deviceRotCoordinate)
+                    
+            
+                    
     
                     // intialize trailing dots behind capture sphere
                     let dot1 = self.captureSphere.dot1
@@ -317,6 +324,21 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         }
     }
     
+    private func setRotation(object: Entity, rotation: Dictionary<String, Float>) {
+        
+        // rotation in radians
+        // [-pi/2, pi/2]
+        let xRotation = (rotation["x"] ?? 0)
+        let yRotation = (rotation["y"] ?? 0)
+        let zRotation = (rotation["z"] ?? 0)
+        
+        object.orientation = simd_quatf(angle: xRotation, axis: [1,0,0]) // x - axis
+        object.orientation = simd_quatf(angle: yRotation, axis: [0,1,0]) // y - axis
+        object.orientation = simd_quatf(angle: zRotation, axis: [0,0,1]) // z - axis
+        
+        
+    }
+    
     // function finds distance between two objects
     private func findDistance(objectCoordinate1: Dictionary<String, Float>, objectCoordinate2: Dictionary<String, Float>) {
         
@@ -339,11 +361,12 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         // calculate distance
         let distance = sqrt(zpow + ypow + zpow)
         
-        // if capture sphere and hummingbird are within a certain distance then capture sphere changes color
+        // if capture sphere and hummingbird are within a certain distance then capture sphere changes color to blue
         if (Float(distance) < Float(threshold)) {
             setColorBlue()
         }
         
+        // otherwise the color of the capture sphere is gray
         else {
             setColorGray()
         }
@@ -352,7 +375,7 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         if (Float(distance) > Float(maxDistance)) {
             maxDistance = Float(distance)
             
-            print(maxDistance)
+           // print(maxDistance)
         }
         
         
@@ -393,6 +416,9 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         let objectTranslation = SIMD3<Float>(x: posx, y: posy, z: posz)
         var objectTransform = Transform(scale: .one, rotation: simd_quatf(), translation: objectTranslation)
 
+//        let radians = device
+//        objectTransform.rotation = += simd_quatf(angle: radians, axis: SIMD3<Float>(1,0,0))
+        
         if (incScale) {
             
             // multiple the scale of the hummingbird by 50 since the model being used is very small
