@@ -23,10 +23,15 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
     var hummingBird: HummingBird._HummingBird!
     var captureSphere: CaptureSphere._CaptureSphere!
     
+    var prevYaw = Float(0.1)
+    var prevPitch = Float(0.1)
+    
     
     // maximum distance between the sphere and the hummingbird
     var maxDistance : Float = 0.0 // 2.14949
     var threshold = 2.14949
+    
+    var countDots = 0
 
 
    // var device: Device._Device!
@@ -37,6 +42,23 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
 //    }
     
     var blueSphere = false
+    var light1 = false
+    var light2 = false
+    var light3 = false
+    var light4 = false
+    var light5 = false
+    var light6 = false
+    var light7 = false
+    
+    var light1Blue = CGColor(red: 0.9911, green: 0.9098, blue: 0.968627, alpha: 0.9)
+    var light2Blue = CGColor(red: 0.81176, green: 0.890196, blue: 0.9839, alpha: 0.9)
+    var light3Blue = CGColor(red: 0.615686, green: 0.78039, blue: 0.98039215, alpha: 0.9)
+    var light4Blue = CGColor(red: 0.458823, green: 0.6941176, blue: 0.98039, alpha: 0.9)
+    var light5Blue = CGColor(red: 0.1568, green: 0.52549, blue: 0.98039215, alpha: 0.9)
+    var light6Blue = CGColor(red: 0.007, green: 0.3333, blue: 0.729411, alpha: 0.9)
+    var light7Blue = CGColor(red: 0.01176, green: 0.2039, blue: 0.439215, alpha: 0.9)
+
+    
     
 //    if let Dots = try? Dots.loadBox() {
 //        let box = Dots.Dots
@@ -91,6 +113,7 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         arView.scene.anchors.append(captureSphere!)
         
         // In the beginning, make sure you cannot see trailing dots behind capture sphere
+        countDots = 0
         self.setTransparency(TransparencyVal: 0, DotNum: captureSphere.dot1!)
         self.setTransparency(TransparencyVal: 0, DotNum: captureSphere.dot2!)
         self.setTransparency(TransparencyVal: 0, DotNum: captureSphere.dot3!)
@@ -101,8 +124,18 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         self.setTransparency(TransparencyVal: 0, DotNum: captureSphere.dot8!)
         self.setTransparency(TransparencyVal: 0, DotNum: captureSphere.dot9!)
         
-        // increase the size of the hummingbird in the beginning
+        // set the transparency of the bird background to 0
+        self.setTransparency(TransparencyVal: 0, DotNum: hummingBird.birdBackground!)
+        
+        // self.captureSphere.look(at: <#T##SIMD3<Float>#>, from: SIMD3<Float>, relativeTo: Entity?)
+        
+        
+//        // set tranparency of face to 0 in beginning
+//        self.setTransparency(TransparencyVal: 0, DotNum: hummingBird.face!)
+        
+        // increase the size of the hummingbird & birdBackground in the beginning
         hummingBird.transform.scale *= 50
+        hummingBird.birdBackground?.transform.scale *= 50
         
         jsonData = loadJson(fileName: "data")!
         
@@ -155,6 +188,8 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
 
        // Volunteer to handle text view callbacks.
        View.textView.delegate = self
+        
+        
        
     }
 
@@ -166,6 +201,9 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         let captureSpherePos = jsonData.spherePos
         let devicePos = jsonData.camPos
         let deviceRot = jsonData.deviceRotation
+        let facePosition = jsonData.centerFacePos
+        let movementType = jsonData.hummingbirdMovementType
+        let lookAt = jsonData.lookAtPoint
         
         if let hummingBirdObj = self.hummingBird!.hummingBird {
             if let captureSphereObj = self.captureSphere!.captureSphere {
@@ -178,6 +216,15 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                     var captureSphereCoordinate = captureSpherePos[count]
                     var deviceCoordinate = devicePos[count]
                     var deviceRotCoordinate = deviceRot[count]
+                    var birdMovementType = movementType[count]
+                    var faceCoordinate = facePosition[count]
+                   // var arrowCoordinate = hummingbirdPos[count + 3]
+                    var lookAtPoint = lookAt[count]
+                    
+                    var arrowCoordinate = hummingBirdCoordinate
+                    arrowCoordinate["x"] = (hummingBirdCoordinate["x"] ?? 0) + 0.2
+                    arrowCoordinate["y"] = (hummingBirdCoordinate["y"] ?? 0) - 0.05
+                    arrowCoordinate["z"] = (hummingBirdCoordinate["z"] ?? 0) + 0.05
                     
                     // previous coordinates
                     var prev1HummingBirdCoordinate = hummingBirdCoordinate
@@ -206,7 +253,6 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                     
                     var prev9HummingBirdCoordinate = hummingBirdCoordinate
                     var prev9CaptureSphereCoordinate = captureSphereCoordinate
-                    
         
                     if (count > 2) {
                         prev1HummingBirdCoordinate = hummingbirdPos[count - 3]
@@ -262,12 +308,27 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                     // set position of device
                     self.setPosition(objectCoordinate: deviceCoordinate, object: self.hummingBird.device!, incScale: false)
                     
+                    // set position of face -- not showing up for some reason
+                    self.setPosition(objectCoordinate: faceCoordinate, object: self.hummingBird.face!, incScale: false)
+                    
+                    // set position of arrow
+                    self.setPosition(objectCoordinate: arrowCoordinate, object: self.hummingBird.arrow!, incScale: false)
+                    //print("Device: ", deviceCoordinate)
+                    // print("face: ", faceCoordinate)
+                    
+                    // set position of bird background as the same position of bird
+                    var birdBackgroundCoordinate = hummingBirdCoordinate
+                    birdBackgroundCoordinate["x"] = (hummingBirdCoordinate["x"] ?? 0) + 0.05
+                    birdBackgroundCoordinate["y"] = (hummingBirdCoordinate["y"] ?? 0) - 0.02
+                    
+                    self.setPosition(objectCoordinate: birdBackgroundCoordinate, object: self.hummingBird.birdBackground!, incScale: false)
+                    
+                    // set color & transparency
+                    self.setBirdBackgroundColor(background: self.hummingBird.birdBackground!, moveType: birdMovementType)
+                    
                     // set rotation of device
                     self.setRotation(object: self.hummingBird.device!, rotation: deviceRotCoordinate)
                     
-            
-                    
-    
                     // intialize trailing dots behind capture sphere
                     let dot1 = self.captureSphere.dot1
                     let dot2 = self.captureSphere.dot2
@@ -291,6 +352,8 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                     self.setPosition(objectCoordinate: prev9CaptureSphereCoordinate, object: dot9!, incScale: false)
                     
                     // set the transparency of these trailing dots
+                    
+                    self.countDots = 0
                     self.setTransparency(TransparencyVal: 0.9, DotNum: dot1!)
                     self.setTransparency(TransparencyVal: 0.8, DotNum: dot2!)
                     self.setTransparency(TransparencyVal: 0.7, DotNum: dot3!)
@@ -309,10 +372,80 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                     
                     self.findDistance(objectCoordinate1: hummingBirdCoordinate, objectCoordinate2: captureSphereCoordinate)
                     
+                    self.hummingBird.face?.transform.scale *= 25
+//                    self.hummingBird.birdBackground?.transform.scale *= 1.2
+//                    self.hummingBird.hummingBird?.transform.scale *= 1.2
+//                    self.hummingBird.arrow?.transform.scale *= 1.2
+//                    self.hummingBird.device?.transform.scale *= 1.2
+//                    self.captureSphere.captureSphere?.transform.scale *= 1.2
+//                    self.captureSphere.dot3?.transform.scale *= 1.2
+//                    self.captureSphere.dot1?.transform.scale *= 1.2
+//                    self.captureSphere.dot2?.transform.scale *= 1.2
+//                    self.captureSphere.dot4?.transform.scale *= 1.2
+//                    self.captureSphere.dot5?.transform.scale *= 1.2
+//                    self.captureSphere.dot6?.transform.scale *= 1.2
+//                    self.captureSphere.dot7?.transform.scale *= 1.2
+//                    self.captureSphere.dot8?.transform.scale *= 1.2
+//                    self.captureSphere.dot9?.transform.scale *= 1.2
+                    
+                    //let yRotation = 3.14159
+                    //self.hummingBird.face?.orientation = simd_quatf(angle: Float(yRotation), axis: [0,1,0])
+                    
+                    let targetPos = SIMD3<Float>(lookAtPoint["x"] ?? 0, lookAtPoint["y"] ?? 0, lookAtPoint["z"] ?? 0)
+                    let fromPos = SIMD3<Float>(faceCoordinate["x"] ?? 0, faceCoordinate["y"] ?? 0,
+                                           faceCoordinate["z"] ?? 0)
+                    let upVector = SIMD3<Float>(0, 1, 0)
+                    
+                    
+                    //print(targetPos)
+                    
+                    // make it that face is always looking at look at point
+//                    self.hummingBird.face?.look(
+//                        at: targetPos,
+//                        from: fromPos,
+//                        relativeTo: self.hummingBird.face
+//                    )
+                    
+                    self.hummingBird.arrow?.scale *= 0.3
+                    
+                    // pitch - x
+                    // yaw - y
+                    
+                    var nextHummingBirdCoordinate = hummingbirdPos[count + 1]
+                    let currentPosx = hummingBirdCoordinate["x"]
+                    let currentPosy = hummingBirdCoordinate["y"]
+                    let currentPosz = hummingBirdCoordinate["z"]
+                    
+                    let nextPosx = nextHummingBirdCoordinate["x"]
+                    let nextPosy = nextHummingBirdCoordinate["y"]
+                    let nextPosz = nextHummingBirdCoordinate["z"]
+                    
+                    let dx = (currentPosx ?? 0) - (nextPosx ?? 0)
+                    let dy = (currentPosy ?? 0) - (nextPosy ?? 0)
+                    let dz = (currentPosz ?? 0) - (nextPosz ?? 0)
+                    
+                    let yaw = atan2(dz, dx)
+                    let pitch = atan2(sqrt(dz * dz + dx * dx), dy) + .pi
+//
+                    
+                    if (self.prevYaw != yaw) {
+                        print("yaw", yaw)
+                    }
+                    
+                    if (self.prevPitch != pitch) {
+                        print("pitch", pitch)
+                    }
+            
+                    self.prevYaw = yaw
+                    self.prevPitch = pitch
+                    
+                   // self.hummingBird.arrow?.orientation = simd_quatf(angle: pitch, axis: [1,0,0])
+                    self.hummingBird.arrow?.orientation = simd_quatf(angle: -yaw + (.pi / 2), axis: [0,1,0])
+                    
                     slow_counter += 1
                     
                     // so that it moves slower, just for right now
-                    if (slow_counter % 3 == 0) {
+                    if (slow_counter % 10 == 0) {
                         count += 1
                     }
                     
@@ -323,7 +456,44 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
             }
         }
     }
-    
+
+    private func setBirdBackgroundColor(background: Entity, moveType: String) {
+        // set transparency
+        var transparent_material = PhysicallyBasedMaterial()
+        
+        // then set color based on movement type
+        if (moveType == "Forward Movement" || moveType == "Movement Forward After Failing" ||
+            moveType == "Continuing Forward From Escape" || moveType == "Escape Movement") { // moving
+            
+            transparent_material.baseColor = .init(tint: .green)
+            
+            //self.hummingBird.arrow?.scale *
+        }
+        
+        else { // stopped
+            transparent_material.baseColor = .init(tint: .red)
+            
+            // make direction arrow disappear when it is stopped
+            
+            
+            //self.hummingBird.arrow?.scale *= 0.001
+        }
+        
+        
+        transparent_material.blending = .transparent(opacity: .init(floatLiteral: 0.3))
+        
+        
+        if let modelEntity = background.findEntity(named: "simpBld_root") as? ModelEntity {
+            modelEntity.model?.materials[0] = transparent_material
+            
+        }
+        
+        if let modelEntity = self.hummingBird.arrow!.findEntity(named: "simpBld_root") as? ModelEntity {
+            modelEntity.model?.materials[0] = transparent_material
+            
+        }
+    }
+
     private func setRotation(object: Entity, rotation: Dictionary<String, Float>) {
         
         // rotation in radians
@@ -335,8 +505,6 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         object.orientation = simd_quatf(angle: xRotation, axis: [1,0,0]) // x - axis
         object.orientation = simd_quatf(angle: yRotation, axis: [0,1,0]) // y - axis
         object.orientation = simd_quatf(angle: zRotation, axis: [0,0,1]) // z - axis
-        
-        
     }
     
     // function finds distance between two objects
@@ -362,15 +530,17 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         let distance = sqrt(zpow + ypow + zpow)
         
         // if capture sphere and hummingbird are within a certain distance then capture sphere changes color to blue
-        if (Float(distance) < Float(threshold)) {
-            setColorBlue()
-        }
+        //if (Float(distance) < Float(threshold)) {
+            
+            
+        setColorBlue(distance: distance)
+       // }
         
         // otherwise the color of the capture sphere is gray
-        else {
-            setColorGray()
-        }
-        
+//        else {
+//            setColorGray()
+//        }
+//
         // keep track of and update max distance
         if (Float(distance) > Float(maxDistance)) {
             maxDistance = Float(distance)
@@ -388,7 +558,7 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         
         blueSphere = true
         
-        setColorBlue()
+       // setColorBlue()
         
         
     }
@@ -444,52 +614,154 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         
     }
     
-    private func setColorBlue() {
+    private func setColorGreen() {
+        var color_material = PhysicallyBasedMaterial()
         
-        blueSphere = true
+        // how you change the color of an object
+        color_material.baseColor = .init(tint: .green)
+        
+        //print(self.hummingBird.birdBackground!)
+        if let modelEntity = self.hummingBird.birdBackground!.findEntity(named: "simpBld_root") as? ModelEntity {
+            modelEntity.model?.materials[0] = color_material
+        }
+    }
+    
+    private func setColorRed() {
+        var color_material = PhysicallyBasedMaterial()
+        
+        // how you change the color of an object
+        color_material.baseColor = .init(tint: .red)
+        if let modelEntity = self.hummingBird.birdBackground!.findEntity(named: "simpBld_root") as? ModelEntity {
+            modelEntity.model?.materials[0] = color_material
+        }
+    }
+    
+    private func setColorBlue(distance: Float) {
+        
+        //blueSphere = true
         
         var color_material = PhysicallyBasedMaterial()
         
         // how you change the color of an object
-        color_material.baseColor = .init(tint: .blue)
+        
+        if (Float(distance) > Float(threshold)) {
+            
+            light1 = true
+            color_material.baseColor = .init(tint: .init(cgColor: light1Blue))
+            
+            
+            
+        }
+        
+        else if (Float(distance) > (0.7 * Float(threshold))) {
+            light2 = true
+            color_material.baseColor = .init(tint: .init(cgColor: light2Blue))
+        }
+        
+       
+        
+        else if (Float(distance) < (0.5 * Float(threshold))) {
+            
+            light3 = true
+            color_material.baseColor = .init(tint: .init(cgColor: light3Blue))
+        }
+        
+        else if (Float(distance) < (0.3 * Float(threshold))) {
+            
+            light4 = true
+            color_material.baseColor = .init(tint: .init(cgColor: light4Blue))
+        }
+        
+        else if (Float(distance) < (0.2 * Float(threshold))) {
+            
+            light5 = true
+            color_material.baseColor = .init(tint: .init(cgColor: light5Blue))
+        }
+        
+        else if (Float(distance) < (0.1 * Float(threshold))) {
+            
+            light6 = true
+            color_material.baseColor = .init(tint: .init(cgColor: light6Blue))
+        }
+        
+        else {
+            
+           light7 = true
+           color_material.baseColor = .init(tint: .init(cgColor: light7Blue))
+        }
+
+        
+        //color_material.baseColor = .init(tint: .blue)
         
         if let modelEntity = self.captureSphere.captureSphere!.findEntity(named: "simpBld_root") as? ModelEntity {
             modelEntity.model?.materials[0] = color_material
         }
-        
-//        if let modelEntity = self.captureSphere.dot1!.findEntity(named: "simpBld_root") as? ModelEntity {
-//
-//            modelEntity.model?.materials[0] = color_material
-//        }
-//
-//        if let modelEntity = self.captureSphere.dot2!.findEntity(named: "simpBld_root") as? ModelEntity {
-//            modelEntity.model?.materials[0] = color_material
-//        }
-//
-//        if let modelEntity = self.captureSphere.dot3!.findEntity(named: "simpBld_root") as? ModelEntity {
-//            modelEntity.model?.materials[0] = color_material
-//        }
-//
-//        if let modelEntity = self.captureSphere.dot4!.findEntity(named: "simpBld_root") as? ModelEntity {
-//            modelEntity.model?.materials[0] = color_material
-//        }
-        
-        
     }
 
     private func setTransparency(TransparencyVal: Float, DotNum: Entity) {
         
-        var transparent_material = PhysicallyBasedMaterial()
+        countDots += 1
         
+        var transparent_material = PhysicallyBasedMaterial()
+     
         if (blueSphere == true) {
             transparent_material.baseColor = .init(tint: .blue)
+            
+            blueSphere = false
         }
+        else if (light1 == true) {
+            transparent_material.baseColor = .init(tint: .init(cgColor: light1Blue))
+           
+        }
+        else if (light2 == true) {
+            transparent_material.baseColor = .init(tint: .init(cgColor: light2Blue))
+            
+        }
+        else if (light3 == true) {
+            transparent_material.baseColor = .init(tint: .init(cgColor: light3Blue))
+           
+        }
+        else if (light4 == true) {
+            transparent_material.baseColor = .init(tint: .init(cgColor: light4Blue))
+            
+        }
+        else if (light5 == true) {
+            transparent_material.baseColor = .init(tint: .init(cgColor: light5Blue))
+            
+        }
+        else if (light6 == true) {
+            transparent_material.baseColor = .init(tint: .init(cgColor: light6Blue))
+            
+        }
+        
+        else if (light7 == true) {
+            transparent_material.baseColor = .init(tint: .init(cgColor: light7Blue))
+            
+            
+        }
+        
+        if (countDots >= 9) {
+            light1 = false
+            light2 = false
+            light3 = false
+            light4 = false
+            light5 = false
+            light6 = false
+            light7 = false
+            
+            countDots = 0
+        }
+        
+        
+        
+        
         
         transparent_material.blending = .transparent(opacity: .init(floatLiteral: TransparencyVal))
         
         
         if let modelEntity = DotNum.findEntity(named: "simpBld_root") as? ModelEntity {
             modelEntity.model?.materials[0] = transparent_material
+        
         }
         
     }
