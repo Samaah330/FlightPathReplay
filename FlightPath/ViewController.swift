@@ -11,17 +11,26 @@ import ARKit
 import Combine
 import Darwin
 
+extension SCNGeometry {
+    class func line(from vector1: SCNVector3, to vector2: SCNVector3) -> SCNGeometry {
+        let indices: [Int32] = [0, 1]
+        let source = SCNGeometrySource(vertices: [vector1, vector2])
+        let element = SCNGeometryElement(indices: indices, primitiveType: .line)
+        return SCNGeometry(sources: [source], elements: [element])
+    }
+}
 
-class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, ARCoachingOverlayViewDelegate {
+class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, ARCoachingOverlayViewDelegate, ARSCNViewDelegate {
     
     @IBOutlet var arView: ARView!
+    var hummingBird: HummingBird._HummingBird!
+    var captureSphere: CaptureSphere._CaptureSphere!
     
     var counter = 0
     
     var touchLocation: CGPoint!
 
-    var hummingBird: HummingBird._HummingBird!
-    var captureSphere: CaptureSphere._CaptureSphere!
+ 
     
     var prevYaw = Float(0.1)
     var prevPitch = Float(0.1)
@@ -31,15 +40,14 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
     var threshold = 2.14949
     
     var countDots = 0
-
-
-   // var device: Device._Device!
     
-//    if let boxScene = try? Device.loadBox() {
-//        let Device = boxScene.Device
-//        // Do something with box.
-//    }
+    // line between entitys
+    var bottomLineFace = ModelEntity()
+    var bottomLineBird = ModelEntity()
+    var line_opacity_value = 1.0
+    var line_width = 0.008
     
+    // capture sphere colors
     var blueSphere = false
     var light1 = false
     var light2 = false
@@ -57,12 +65,6 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
     var light6Blue = CGColor(red: 0.05, green: 0.4745, blue: 0.98039, alpha: 0.9)
     var light7Blue = CGColor(red: 0.0196, green: 0.439, blue: 0.9490, alpha: 0.9)
 
-    
-    
-//    if let Dots = try? Dots.loadBox() {
-//        let box = Dots.Dots
-//        // Do something with box.
-//    }
     
     var jsonData: GameData!
     
@@ -126,12 +128,6 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         // set the transparency of the bird background to 0
         self.setTransparency(TransparencyVal: 0, DotNum: hummingBird.birdBackground!)
         
-        // self.captureSphere.look(at: <#T##SIMD3<Float>#>, from: SIMD3<Float>, relativeTo: Entity?)
-        
-        
-//        // set tranparency of face to 0 in beginning
-//        self.setTransparency(TransparencyVal: 0, DotNum: hummingBird.face!)
-        
         // increase the size of the hummingbird & birdBackground in the beginning
         hummingBird.transform.scale *= 50
         hummingBird.birdBackground?.transform.scale *= 50
@@ -142,7 +138,7 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(ViewController.myviewTapped))
         arView.addGestureRecognizer(tapGesture)
         arView.session.delegate = self
-             
+    
         overlayUISetup()
         
         // threshold is 1 / 3 of maximum distance
@@ -187,9 +183,6 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
 
        // Volunteer to handle text view callbacks.
        View.textView.delegate = self
-        
-        
-       
     }
 
 
@@ -203,8 +196,6 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         let facePosition = jsonData.centerFacePos
         let movementType = jsonData.hummingbirdMovementType
         let lookAt = jsonData.lookAtPoint
-        
-        
         
         if let hummingBirdObj = self.hummingBird!.hummingBird {
             if let captureSphereObj = self.captureSphere!.captureSphere {
@@ -221,9 +212,6 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                     var faceCoordinate = facePosition[count]
                    // var arrowCoordinate = hummingbirdPos[count + 3]
                     var lookAtPoint = lookAt[count]
-                    
-                    //. lookAtPoint
-                   // print(type(of: lookAtPoint))
                     
                     var arrowCoordinate = hummingBirdCoordinate
                     arrowCoordinate["x"] = (hummingBirdCoordinate["x"] ?? 0) + 0.2
@@ -317,9 +305,7 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                     
                     // set position of arrow
                     self.setPosition(objectCoordinate: arrowCoordinate, object: self.hummingBird.arrow!, incScale: false)
-                    //print("Device: ", deviceCoordinate)
-                    // print("face: ", faceCoordinate)
-                    
+            
                     // set position of bird background as the same position of bird
                     var birdBackgroundCoordinate = hummingBirdCoordinate
                     birdBackgroundCoordinate["x"] = (hummingBirdCoordinate["x"] ?? 0) + 0.05
@@ -354,6 +340,7 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                     self.setPosition(objectCoordinate: prev7CaptureSphereCoordinate, object: dot7!, incScale: false)
                     self.setPosition(objectCoordinate: prev8CaptureSphereCoordinate, object: dot8!, incScale: false)
                     self.setPosition(objectCoordinate: prev9CaptureSphereCoordinate, object: dot9!, incScale: false)
+                    self.setPosition(objectCoordinate: lookAtPoint, object: self.hummingBird.arrow6!, incScale: false)
                     
                     // set the transparency of these trailing dots
                     
@@ -377,79 +364,21 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                     self.findDistance(objectCoordinate1: hummingBirdCoordinate, objectCoordinate2: captureSphereCoordinate)
                     
                     self.hummingBird.face?.transform.scale *= 15
-//                    self.hummingBird.birdBackground?.transform.scale *= 1.2
-//                    self.hummingBird.hummingBird?.transform.scale *= 1.2
-//                    self.hummingBird.arrow?.transform.scale *= 1.2\
-//                    self.hummingBird.device?.transform.scale *= 1.2
-//                    self.captureSphere.captureSphere?.transform.scale *= 1.2
-//                    self.captureSphere.dot3?.transform.scale *= 1.2
-//                    self.captureSphere.dot1?.transform.scale *= 1.2
-//                    self.captureSphere.dot2?.transform.scale *= 1.2
-//                    self.captureSphere.dot4?.transform.scale *= 1.2
-//                    self.captureSphere.dot5?.transform.scale *= 1.2
-//                    self.captureSphere.dot6?.transform.scale *= 1.2
-//                    self.captureSphere.dot7?.transform.scale *= 1.2
-//                    self.captureSphere.dot8?.transform.scale *= 1.2
-//                    self.captureSphere.dot9?.transform.scale *= 1.2
-                    
-                    //let yRotation = 3.14159
-                    //self.hummingBird.face?.orientation = simd_quatf(angle: Float(yRotation), axis: [0,1,0])
-                    
-                    let targetPos = SIMD3<Float>(lookAtPoint["x"] ?? 0, lookAtPoint["y"] ?? 0, lookAtPoint["z"] ?? 0)
-                    let fromPos = SIMD3<Float>(faceCoordinate["x"] ?? 0, faceCoordinate["y"] ?? 0,
-                                           faceCoordinate["z"] ?? 0)
-                    let upVector = SIMD3<Float>(0, 1, 0)
-                    
-                    
-                    //print(targetPos)
-                    
-                    // make it that face is always looking at look at point
-//                    self.hummingBird.face?.look(
-//                        at: targetPos,
-//                        from: fromPos,
-//                        relativeTo: self.hummingBird.face
-//                    )
-                    
+                    self.hummingBird.arrow6?.transform.scale *= 0.5
+
                     self.hummingBird.arrow?.scale *= 0.3
                     
-                    // pitch - x
-                    // yaw - y
-                    
                     var nextHummingBirdCoordinate = hummingbirdPos[count + 1]
-                    let currentPosx = hummingBirdCoordinate["x"]
-                    let currentPosy = hummingBirdCoordinate["y"]
-                    let currentPosz = hummingBirdCoordinate["z"]
+                    self.setOrientation(point1: hummingBirdCoordinate, point2: nextHummingBirdCoordinate, type_obj: "Arrow")
+                 
+                    // line between face and lookat point
+                    self.draw2DLine(point1: faceCoordinate, point2: lookAtPoint, type_obj: "Face", counter: count)
                     
-                    let nextPosx = nextHummingBirdCoordinate["x"]
-                    let nextPosy = nextHummingBirdCoordinate["y"]
-                    let nextPosz = nextHummingBirdCoordinate["z"]
+                    // line between hummingbird and sphere
+                    self.draw2DLine(point1: hummingBirdCoordinate, point2: captureSphereCoordinate, type_obj: "Bird", counter: slow_counter)
                     
-                    let dx = (currentPosx ?? 0) - (nextPosx ?? 0)
-                    let dy = (currentPosy ?? 0) - (nextPosy ?? 0)
-                    let dz = (currentPosz ?? 0) - (nextPosz ?? 0)
+                    self.setOrientation(point1: faceCoordinate, point2: lookAtPoint, type_obj: "Face")
                     
-                    let yaw = atan2(dz, dx)
-                    let pitch = atan2(sqrt(dz * dz + dx * dx), dy) + .pi
-//
-                    
-//                    if (self.prevYaw != yaw) {
-//                        print("yaw", yaw)
-//                    }
-//
-//                    if (self.prevPitch != pitch) {
-//                        print("pitch", pitch)
-//                    }
-            
-                    self.hummingBird.face?.orientation = simd_quatf(angle: -.pi / 2, axis: [0,1,0])
-                  //  self.hummingBird.device?.scale *= 2
-                    
-                    self.prevYaw = yaw
-                    self.prevPitch = pitch
-                    
-                   // self.hummingBird.arrow?.orientation = simd_quatf(angle: pitch, axis: [1,0,0])
-                    self.hummingBird.arrow?.orientation = simd_quatf(angle: -yaw + (.pi / 2), axis: [0,1,0])
-                    
-                    self.drawLine(lookAtPoint: lookAtPoint, faceCoordinate: faceCoordinate)
                     slow_counter += 1
                     
                     // so that it moves slower, just for right now
@@ -460,116 +389,95 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                     if count >= hummingbirdPos.count {
                         t.invalidate()
                     }
-                    
-                    
                 }
             }
         }
     }
     
-    private func drawLine(lookAtPoint: Dictionary<String, Float>, faceCoordinate:Dictionary<String, Float>) {
 
-        let x1 = (faceCoordinate["x"] ?? 0)
-        let y1 = (faceCoordinate["y"] ?? 0)
-        let z1 = (faceCoordinate["z"] ?? 0)
+    private func draw2DLine(point1: Dictionary<String, Float>, point2: Dictionary<String, Float>, type_obj: String, counter: Int) {
         
-        let x2 = (lookAtPoint["x"] ?? 0)
-        let y2 = (lookAtPoint["y"] ?? 0)
-        let z2 = (lookAtPoint["z"] ?? 0)
-        
-        // mid
-        let xmid1 = (x1 + x2) / 2
-        let ymid1 = (y1 + y2) / 2
-        let zmid1 = (z1 + z2) / 2
-        
-        // b/w mid and x2
-        let xmid2 = (xmid1 + x2) / 2
-        let ymid2 = (ymid1 + y2) / 2
-        let zmid2 = (zmid1 + z2) / 2
-        
-        // b/w mid and x1
-        let xmid3 = (xmid1 + x1) / 2
-        let ymid3 = (ymid1 + y1) / 2
-        let zmid3 = (zmid1 + z1) / 2
-        
-        // find angle for arrow and face orientation
-        
-        // transparency
-        var transparent_material = PhysicallyBasedMaterial()
-        transparent_material.baseColor = .init(tint: .red)
-        transparent_material.blending = .transparent(opacity: .init(floatLiteral: 0.7))
-    
-    
+        var transparency_material = PhysicallyBasedMaterial()
+       
+        let x1 = point1["x"] ?? 0
+        let y1 = point1["y"] ?? 0
+        let z1 = point1["z"] ?? 0
 
-    
-        // set positions
-        //look at point
-        var objectTranslation = SIMD3<Float>(x: x2, y: y2, z: z2)
-        var objectTransform = Transform(scale: .one, rotation: simd_quatf(), translation: objectTranslation)
-        self.hummingBird.arrow6?.scale *= 0.4
-        self.hummingBird.arrow6?.move(to: objectTransform, relativeTo: nil)
+        let x2 = point2["x"] ?? 0
+        let y2 = point2["y"] ?? 0
+        let z2 = point2["z"] ?? 0
+
+        let midPosition = SIMD3<Float>(x:(x1 + x2) / 2,
+                                  y:(y1 + y2) / 2,
+                                  z:(z1 + z2) / 2)
+
+        let position1 = SIMD3<Float>(x: x1, y: y1, z: z1)
+        let position2 = SIMD3<Float>(x: x2, y: y2, z: z2)
+
+        let anchor = AnchorEntity()
+        anchor.position = midPosition
+        anchor.look(at: position1, from: midPosition, relativeTo: nil)
+
+        let depth_size = simd_distance(position1, position2)
+
+        transparency_material.baseColor = .init(tint: .red)
         
+        // update opacity of line
+        line_opacity_value -= 0.001
+    
+        if (line_opacity_value <= 0) {
+            line_opacity_value = 1
+        }
+        
+        transparency_material.blending = .transparent(opacity: .init(floatLiteral: Float(line_opacity_value)))
+
+        // problem, - I am creating new entity every frame which is causing a lag
+        let bottomLineMesh = MeshResource.generateBox(width: Float(line_width),
+                                                      height: Float(line_width),
+                                                      depth: depth_size)
+
+        // update mesh
+        if (type_obj == "Face") {
+            bottomLineFace.model = .init(mesh: bottomLineMesh, materials: [transparency_material])
+
+            anchor.addChild(bottomLineFace)
+            arView.scene.addAnchor(anchor)
+        }
+        
+        else if (type_obj == "Bird") {
+            bottomLineBird.model = .init(mesh: bottomLineMesh, materials: [transparency_material])
+            
+            anchor.addChild(bottomLineBird)
+            arView.scene.addAnchor(anchor)
+        }
+    }
+    
+    private func setOrientation(point1: Dictionary<String, Float>, point2: Dictionary<String, Float>, type_obj: String) {
+
+        // NOTE: pitch = x & yaw = y
+         let x1 = point1["x"] ?? 0
+         let y1 = point1["y"] ?? 0
+         let z1 = point1["z"] ?? 0
+
+         let x2 = point2["x"] ?? 0
+         let y2 = point2["y"] ?? 0
+         let z2 = point2["z"] ?? 0
+        
+        // face orientation
         let dx = x1 - x2
         let dy = y1 - y2
         let dz = z1 - z2
         
         let yaw = atan2(dz, dx)
                 
-        self.hummingBird.arrow6?.orientation = simd_quatf(angle: -yaw + (.pi / 2), axis: [0,1,0])
-        self.hummingBird.face?.orientation = simd_quatf(angle: -yaw + (.pi / 2) + .pi, axis: [0,1,0])
-        
-        if let modelEntity = self.hummingBird.arrow6?.findEntity(named: "simpBld_root") as? ModelEntity {
-            modelEntity.model?.materials[0] = transparent_material
-        
+        if (type_obj == "Face") {
+            self.hummingBird.face?.orientation = simd_quatf(angle: -yaw + (.pi / 2) + .pi, axis: [0,1,0])
+            self.hummingBird.arrow6?.orientation = simd_quatf(angle: -yaw + (.pi / 2), axis: [0,1,0])
         }
         
-        // mid
-        let objectTranslation2 = SIMD3<Float>(x: xmid1, y: ymid1, z: zmid1)
-        var objectTransform2 = Transform(scale: .one, rotation: simd_quatf(), translation: objectTranslation2)
-
-        self.hummingBird.line2?.move(to: objectTransform2, relativeTo: nil)
-        self.hummingBird.line2?.scale *= 0.7
-        
-        if let modelEntity = self.hummingBird.line2?.findEntity(named: "simpBld_root") as? ModelEntity {
-            modelEntity.model?.materials[0] = transparent_material
-        
+        else if (type_obj == "Bird") {
+            self.hummingBird.arrow?.orientation = simd_quatf(angle: -yaw + (.pi / 2), axis: [0,1,0])
         }
-        
-        
-
-        // b/w mid and x2
-        objectTranslation = SIMD3<Float>(x: xmid2, y: ymid2, z: zmid2)
-        objectTransform = Transform(scale: .one, rotation: simd_quatf(), translation: objectTranslation)
-        self.hummingBird.line3?.move(to: objectTransform, relativeTo: nil)
-        self.hummingBird.line3?.scale *= 0.7
-        
-        if let modelEntity = self.hummingBird.line3?.findEntity(named: "simpBld_root") as? ModelEntity {
-            modelEntity.model?.materials[0] = transparent_material
-        
-        }
-
-        // b/w mid and x1
-        objectTranslation = SIMD3<Float>(x: xmid3, y: ymid3, z: zmid3)
-        objectTransform = Transform(scale: .one, rotation: simd_quatf(), translation: objectTranslation)
-        self.hummingBird.line4?.move(to: objectTransform, relativeTo: nil)
-        self.hummingBird.line4?.scale *= 0.7
-        
-        if let modelEntity = self.hummingBird.line4?.findEntity(named: "simpBld_root") as? ModelEntity {
-            modelEntity.model?.materials[0] = transparent_material
-        
-        }
-        
-        // face
-        objectTranslation = SIMD3<Float>(x: x1, y: y1, z: z1)
-        objectTransform = Transform(scale: .one, rotation: simd_quatf(), translation: objectTranslation)
-        self.hummingBird.line5?.move(to: objectTransform, relativeTo: nil)
-        self.hummingBird.line5?.scale *= 0.7
-        
-        if let modelEntity = self.hummingBird.line5?.findEntity(named: "simpBld_root") as? ModelEntity {
-            modelEntity.model?.materials[0] = transparent_material
-        
-        }
-           
     }
 
     private func setBirdBackgroundColor(background: Entity, moveType: String) {
@@ -620,6 +528,30 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         object.orientation = simd_quatf(angle: xRotation, axis: [1,0,0]) // x - axis
         object.orientation = simd_quatf(angle: yRotation, axis: [0,1,0]) // y - axis
         object.orientation = simd_quatf(angle: zRotation, axis: [0,0,1]) // z - axis
+    }
+    
+    private func ReturnfindDistance(objectCoordinate1: Dictionary<String, Float>, objectCoordinate2: Dictionary<String, Float>) -> Float{
+        
+        let x1 = (objectCoordinate1["x"] ?? 0)
+        let y1 = (objectCoordinate1["y"] ?? 0)
+        let z1 = (objectCoordinate1["z"] ?? 0)
+        
+        let x2 = (objectCoordinate2["x"] ?? 0)
+        let y2 = (objectCoordinate2["y"] ?? 0)
+        let z2 = (objectCoordinate2["z"] ?? 0)
+        
+        let xdiff = abs(x1 - x2)
+        let ydiff = abs(y1 - y2)
+        let zdiff = abs(z1 - z2)
+        
+        let xpow = pow(xdiff, 2)
+        let ypow = pow(ydiff, 2)
+        let zpow = pow(zdiff, 2)
+        
+        // calculate distance
+        let distance = sqrt(zpow + ypow + zpow)
+        
+        return distance
     }
     
     // function finds distance between two objects
@@ -689,8 +621,7 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         object7.transform.scale *= 2.0
         object8.transform.scale *= 2.0
         object9.transform.scale *= 2.0
-        
-        
+     
     }
     
     private func setPosition(objectCoordinate: Dictionary<String, Float> , object: Entity, incScale: Bool) {
