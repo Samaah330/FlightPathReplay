@@ -533,66 +533,7 @@
                   "CD0A160E-B950-4CBB-92EB-A2F762D19B5D" : null,
                   "CDB6D1C7-3655-454D-BEA6-D097257A5AB7" : null,
                   "CEA15628-320E-4A9E-97FE-7AD6A73FA633" : null,
-                  "D1F8C145-3B7A-4852-8B9A-0640606C1C9C" : {
-                    "overrides" : {
-                      "arguments" : [
-                        [
-                          "material",
-                          {
-                            "typeName" : "String",
-                            "value" : "standard"
-                          }
-                        ],
-                        [
-                          "type",
-                          {
-                            "typeName" : "String",
-                            "value" : "box"
-                          }
-                        ]
-                      ],
-                      "factory" : {
-                        "identifier" : "com.apple.rc.af.CoreAssetFactories.PrimitiveShapeAssetFactory",
-                        "version" : "1.0"
-                      },
-                      "runtimeAttributes" : [
-                        [
-                          "RuntimeIdentifier",
-                          {
-                            "typeName" : "UUID",
-                            "value" : "EABC2E5C-6D82-4DBE-82B5-A063DED4BE50"
-                          }
-                        ],
-                        [
-                          "entityName",
-                          {
-                            "typeName" : "String",
-                            "value" : "birdBackground"
-                          }
-                        ]
-                      ]
-                    },
-                    "transform" : {
-                      "matrix" : [
-                        0.090012930333614349,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0.090012930333614349,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0.090012930333614349,
-                        0,
-                        0.014425726607441902,
-                        -0.0045006466098129749,
-                        -0.046500001102685928,
-                        1
-                      ]
-                    }
-                  },
+                  "D1F8C145-3B7A-4852-8B9A-0640606C1C9C" : null,
                   "D38B9941-7877-4419-9FA9-145E86DE546A" : {
                     "overrides" : {
                       "children" : {
@@ -740,9 +681,9 @@
                   0.45242869853973389,
                   0.37904751300811768,
                   0,
-                  0.56854283809661865,
-                  0.2224789559841156,
-                  0.024562975391745567,
+                  0.28907465934753418,
+                  0.090698659420013428,
+                  -0.007159101776778698,
                   1
                 ],
                 "sceneTransform" : [

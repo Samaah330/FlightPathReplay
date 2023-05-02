@@ -1,37 +1,31 @@
-//
-//  ViewController.swift
-//  FlightPath
-//
-//  Created by Jaewook Lee on 9/30/22.
-//
-
 import UIKit
 import RealityKit
 import ARKit
 import Combine
 import Darwin
 
-extension SCNGeometry {
-    class func line(from vector1: SCNVector3, to vector2: SCNVector3) -> SCNGeometry {
-        let indices: [Int32] = [0, 1]
-        let source = SCNGeometrySource(vertices: [vector1, vector2])
-        let element = SCNGeometryElement(indices: indices, primitiveType: .line)
-        return SCNGeometry(sources: [source], elements: [element])
-    }
-}
-
 class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, ARCoachingOverlayViewDelegate, ARSCNViewDelegate {
     
     @IBOutlet var arView: ARView!
+    @IBOutlet var arSCNView : ARSCNView!
+    var jsonData: GameData!
+    var counter = 0
+    var devideAmount = Float(9.0)
+    var reduceSize = Float(0.2)
+
     var hummingBird: HummingBird._HummingBird!
     var captureSphere: CaptureSphere._CaptureSphere!
     
-    var counter = 0
-    
+    // sticky notes
     var touchLocation: CGPoint!
+    var trashZone: GradientView!
+    var shadeView: UIView!
+    var Notes = [NoteEntity]()
+    weak var selectedView: NoteView?
+    var lastKeyboardHeight: Double?
+    var subscription: Cancellable!
 
- 
-    
+    // orientation
     var prevYaw = Float(0.1)
     var prevPitch = Float(0.1)
 
@@ -42,10 +36,19 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
     var countDots = 0
     
     // line between entitys
-    var bottomLineFace = ModelEntity()
-    var bottomLineBird = ModelEntity()
-    var line_opacity_value = 1.0
-    var line_width = 0.008
+//    var bottomLineFace = ModelEntity()
+//    var bottomLineBird = ModelEntity()
+    var countLine = 0
+    var transparency_material_line = PhysicallyBasedMaterial()
+    var listBirdLines: [ModelEntity] = []
+    var listBirdAnchors: [AnchorEntity] = []
+    var listBirdTransparencies: [Double] = []
+    
+    var listFaceLines: [ModelEntity] = []
+    var listFaceAnchors: [AnchorEntity] = []
+    var listFaceTransparencies: [Double] = []
+    
+    var line_width = 0.0008
     
     // capture sphere colors
     var blueSphere = false
@@ -64,18 +67,6 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
     var light5Blue = CGColor(red: 0.1647, green: 0.5333, blue: 0.98039215, alpha: 0.9)
     var light6Blue = CGColor(red: 0.05, green: 0.4745, blue: 0.98039, alpha: 0.9)
     var light7Blue = CGColor(red: 0.0196, green: 0.439, blue: 0.9490, alpha: 0.9)
-
-    
-    var jsonData: GameData!
-    
-    @IBOutlet var arSCNView : ARSCNView!
-    var trashZone: GradientView!
-    var shadeView: UIView!
-      
-    var Notes = [NoteEntity]()
-    weak var selectedView: NoteView?
-    var lastKeyboardHeight: Double?
-    var subscription: Cancellable!
       
     struct GameData: Decodable {
         let camPos: [[String: Float]]
@@ -125,24 +116,19 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         self.setTransparency(TransparencyVal: 0, DotNum: captureSphere.dot8!)
         self.setTransparency(TransparencyVal: 0, DotNum: captureSphere.dot9!)
         
-        // set the transparency of the bird background to 0
-        self.setTransparency(TransparencyVal: 0, DotNum: hummingBird.birdBackground!)
-        
         // increase the size of the hummingbird & birdBackground in the beginning
         hummingBird.transform.scale *= 50
-        hummingBird.birdBackground?.transform.scale *= 50
-        
-        jsonData = loadJson(fileName: "data")!
         
         // If the user taps the screen, the function "myviewTapped" is called
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(ViewController.myviewTapped))
         arView.addGestureRecognizer(tapGesture)
         arView.session.delegate = self
-    
-        overlayUISetup()
-        
+            
         // threshold is 1 / 3 of maximum distance
         threshold = threshold / 3
+        
+        jsonData = loadJson(fileName: "data")!
+        overlayUISetup()
     }
     
     @objc func myviewTapped(_sender: UITapGestureRecognizer) {
@@ -203,7 +189,7 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                 // change timer back to 1/60 later
                 var timer = Timer.scheduledTimer(withTimeInterval: 1/500, repeats: true){ t in
                     
-                    // get position of hummingbird, capture sphere, & device
+                    // get positions of components
                     var hummingBirdCoordinate = hummingbirdPos[count]
                     var captureSphereCoordinate = captureSpherePos[count]
                     var deviceCoordinate = devicePos[count]
@@ -213,171 +199,69 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                    // var arrowCoordinate = hummingbirdPos[count + 3]
                     var lookAtPoint = lookAt[count]
                     
-                    var arrowCoordinate = hummingBirdCoordinate
-                    arrowCoordinate["x"] = (hummingBirdCoordinate["x"] ?? 0) + 0.2
-                    arrowCoordinate["y"] = (hummingBirdCoordinate["y"] ?? 0) - 0.05
-                    arrowCoordinate["z"] = (hummingBirdCoordinate["z"] ?? 0) + 0.05
-                    
-                    // previous coordinates
-                    var prev1HummingBirdCoordinate = hummingBirdCoordinate
-                    var prev1CaptureSphereCoordinate = captureSphereCoordinate
-                    
-                    var prev2HummingBirdCoordinate = hummingBirdCoordinate
-                    var prev2CaptureSphereCoordinate = captureSphereCoordinate
-                    
-                    var prev3HummingBirdCoordinate = hummingBirdCoordinate
-                    var prev3CaptureSphereCoordinate = captureSphereCoordinate
-                    
-                    var prev4HummingBirdCoordinate = hummingBirdCoordinate
-                    var prev4CaptureSphereCoordinate = captureSphereCoordinate
-                    
-                    var prev5HummingBirdCoordinate = hummingBirdCoordinate
-                    var prev5CaptureSphereCoordinate = captureSphereCoordinate
-                    
-                    var prev6HummingBirdCoordinate = hummingBirdCoordinate
-                    var prev6CaptureSphereCoordinate = captureSphereCoordinate
-                    
-                    var prev7HummingBirdCoordinate = hummingBirdCoordinate
-                    var prev7CaptureSphereCoordinate = captureSphereCoordinate
-                    
-                    var prev8HummingBirdCoordinate = hummingBirdCoordinate
-                    var prev8CaptureSphereCoordinate = captureSphereCoordinate
-                    
-                    var prev9HummingBirdCoordinate = hummingBirdCoordinate
-                    var prev9CaptureSphereCoordinate = captureSphereCoordinate
-        
-                    if (count > 2) {
-                        prev1HummingBirdCoordinate = hummingbirdPos[count - 3]
-                        prev1CaptureSphereCoordinate = captureSpherePos[count - 3]
-                    }
-                    
-                    if (count > 4) {
-                        prev2HummingBirdCoordinate = hummingbirdPos[count - 5]
-                        prev2CaptureSphereCoordinate = captureSpherePos[count - 5]
-                    }
-                    
-                    if (count > 6) {
-                        prev3HummingBirdCoordinate = hummingbirdPos[count - 7]
-                        prev3CaptureSphereCoordinate = captureSpherePos[count - 7]
-                    }
-                    
-                    if (count > 8) {
-                        prev4HummingBirdCoordinate = hummingbirdPos[count - 9]
-                        prev4CaptureSphereCoordinate = captureSpherePos[count - 9]
-                    }
-                    
-                    if (count > 10) {
-                        prev5HummingBirdCoordinate = hummingbirdPos[count - 11]
-                        prev5CaptureSphereCoordinate = captureSpherePos[count - 11]
-                    }
-                    
-                    if (count > 12) {
-                        prev6HummingBirdCoordinate = hummingbirdPos[count - 13]
-                        prev6CaptureSphereCoordinate = captureSpherePos[count - 13]
-                    }
-                    
-                    if (count > 14) {
-                        prev7HummingBirdCoordinate = hummingbirdPos[count - 15]
-                        prev7CaptureSphereCoordinate = captureSpherePos[count - 15]
-                    }
-                    
-                    if (count > 16) {
-                        prev8HummingBirdCoordinate = hummingbirdPos[count - 17]
-                        prev8CaptureSphereCoordinate = captureSpherePos[count - 17]
-                    }
-                    
-                    if (count > 18) {
-                        prev9HummingBirdCoordinate = hummingbirdPos[count - 19]
-                        prev9CaptureSphereCoordinate = captureSpherePos[count - 19]
-                    }
+//                    var arrowCoordinate = hummingBirdCoordinate
+//                    arrowCoordinate["x"] = (hummingBirdCoordinate["x"] ?? 0) + 0.2
+//                    arrowCoordinate["y"] = (hummingBirdCoordinate["y"] ?? 0) - 0.05
+//                    arrowCoordinate["z"] = (hummingBirdCoordinate["z"] ?? 0) + 0.05
                 
                     // set position of hummingbird
                     self.setPosition(objectCoordinate: hummingBirdCoordinate, object: hummingBirdObj, incScale: true)
-                        
-                    // set position of capture sphere
-                    self.setPosition(objectCoordinate: captureSphereCoordinate, object: captureSphereObj, incScale: false)
                     
                     // set position of device
                     self.setPosition(objectCoordinate: deviceCoordinate, object: self.hummingBird.device!, incScale: false)
                     
-                    // set position of face -- not showing up for some reason
+                    // set position of face
                     self.setPosition(objectCoordinate: faceCoordinate, object: self.hummingBird.face!, incScale: false)
                     
-                    // set position of arrow
-                    self.setPosition(objectCoordinate: arrowCoordinate, object: self.hummingBird.arrow!, incScale: false)
-            
-                    // set position of bird background as the same position of bird
-                    var birdBackgroundCoordinate = hummingBirdCoordinate
-                    birdBackgroundCoordinate["x"] = (hummingBirdCoordinate["x"] ?? 0) + 0.05
-                    birdBackgroundCoordinate["y"] = (hummingBirdCoordinate["y"] ?? 0) - 0.02
+                    // set position of look at point arrow
+                    //self.setPosition(objectCoordinate: lookAtPoint, object: self.hummingBird.arrow6!, incScale: false)
                     
-                    self.setPosition(objectCoordinate: birdBackgroundCoordinate, object: self.hummingBird.birdBackground!, incScale: false)
-                    
-                    // set color & transparency
-                    self.setBirdBackgroundColor(background: self.hummingBird.birdBackground!, moveType: birdMovementType)
-                    
+                    // set position of bird arrow
+//                    self.setPosition(objectCoordinate: arrowCoordinate, object: self.hummingBird.arrow!, incScale: false)
+//
                     // set rotation of device
                     self.setRotation(object: self.hummingBird.device!, rotation: deviceRotCoordinate)
-                    
-                    // intialize trailing dots behind capture sphere
-                    let dot1 = self.captureSphere.dot1
-                    let dot2 = self.captureSphere.dot2
-                    let dot3 = self.captureSphere.dot3
-                    let dot4 = self.captureSphere.dot4
-                    let dot5 = self.captureSphere.dot5
-                    let dot6 = self.captureSphere.dot6
-                    let dot7 = self.captureSphere.dot7
-                    let dot8 = self.captureSphere.dot8
-                    let dot9 = self.captureSphere.dot9
-                    
-                    // set the position of these trailing dots
-                    self.setPosition(objectCoordinate: prev1CaptureSphereCoordinate, object: dot1!, incScale: false)
-                    self.setPosition(objectCoordinate: prev2CaptureSphereCoordinate, object: dot2!, incScale: false)
-                    self.setPosition(objectCoordinate: prev3CaptureSphereCoordinate, object: dot3!, incScale: false)
-                    self.setPosition(objectCoordinate: prev4CaptureSphereCoordinate, object: dot4!, incScale: false)
-                    self.setPosition(objectCoordinate: prev5CaptureSphereCoordinate, object: dot5!, incScale: false)
-                    self.setPosition(objectCoordinate: prev6CaptureSphereCoordinate, object: dot6!, incScale: false)
-                    self.setPosition(objectCoordinate: prev7CaptureSphereCoordinate, object: dot7!, incScale: false)
-                    self.setPosition(objectCoordinate: prev8CaptureSphereCoordinate, object: dot8!, incScale: false)
-                    self.setPosition(objectCoordinate: prev9CaptureSphereCoordinate, object: dot9!, incScale: false)
-                    self.setPosition(objectCoordinate: lookAtPoint, object: self.hummingBird.arrow6!, incScale: false)
-                    
-                    // set the transparency of these trailing dots
-                    
-                    self.countDots = 0
-                    self.setTransparency(TransparencyVal: 0.9, DotNum: dot1!)
-                    self.setTransparency(TransparencyVal: 0.8, DotNum: dot2!)
-                    self.setTransparency(TransparencyVal: 0.7, DotNum: dot3!)
-                    self.setTransparency(TransparencyVal: 0.6, DotNum: dot4!)
-                    self.setTransparency(TransparencyVal: 0.5, DotNum: dot5!)
-                    self.setTransparency(TransparencyVal: 0.4, DotNum: dot6!)
-                    self.setTransparency(TransparencyVal: 0.3, DotNum: dot7!)
-                    self.setTransparency(TransparencyVal: 0.2, DotNum: dot8!)
-                    self.setTransparency(TransparencyVal: 0.1, DotNum: dot9!)
-                                   
-                    // this calls the function that is triggered when you tap on the capture sphere object
-                    self.captureSphere.actions.colorChange.onAction = self.handleTapOnEntity(_:)
-    
-                    // increase scale of trailing dots
-                    self.multScaleBy2(object1: dot1!, object2: dot2!, object3: dot3!, object4: dot4!,   object5: dot5!, object6: dot6!, object7: dot7!, object8: dot8!, object9: dot9!)
-                    
+            
+                    // initialize capture sphere
+                    self.initializeCaptureSphere(count: count, hummingBirdCoordinate: hummingBirdCoordinate, captureSphereCoordinate: captureSphereCoordinate, hummingbirdPos: hummingbirdPos, captureSpherePos: captureSpherePos, captureSphereObj: captureSphereObj)
+
                     self.findDistance(objectCoordinate1: hummingBirdCoordinate, objectCoordinate2: captureSphereCoordinate)
                     
-                    self.hummingBird.face?.transform.scale *= 15
-                    self.hummingBird.arrow6?.transform.scale *= 0.5
-
-                    self.hummingBird.arrow?.scale *= 0.3
-                    
+                    self.hummingBird.face?.transform.scale *= 10
+                    self.hummingBird.arrow6?.transform.scale *= 0
+                    self.hummingBird.arrow?.scale *= 0 // 0.3
+                    self.hummingBird.device?.scale *= 2
+                
                     var nextHummingBirdCoordinate = hummingbirdPos[count + 1]
-                    self.setOrientation(point1: hummingBirdCoordinate, point2: nextHummingBirdCoordinate, type_obj: "Arrow")
+                    self.setOrientation(point1: hummingBirdCoordinate, point2: nextHummingBirdCoordinate, type_obj: "Bird")
                  
-                    // line between face and lookat point
-                    self.draw2DLine(point1: faceCoordinate, point2: lookAtPoint, type_obj: "Face", counter: count)
                     
-                    // line between hummingbird and sphere
-                    self.draw2DLine(point1: hummingBirdCoordinate, point2: captureSphereCoordinate, type_obj: "Bird", counter: slow_counter)
+                    // create new line every 50 * 4 = 200 frames
+                    if (slow_counter % 70 == 0) {
+                        
+                        // create line between entitys
+                        var bottomLineBird = ModelEntity()
+                        var bottomLineFace = ModelEntity()
+                        
+                        // line between face and lookat point - (using ipad location right now)
+                        self.draw2DLine(point1: faceCoordinate, point2: lookAtPoint, type_obj: "Face", counter: count, LineEntity: bottomLineFace)
+                        
+                        // line between hummingbird and sphere
+                        self.draw2DLine(point1: hummingBirdCoordinate, point2: captureSphereCoordinate, type_obj: "Bird", counter: slow_counter, LineEntity: bottomLineBird)
+                    }
                     
+                    
+                        
                     self.setOrientation(point1: faceCoordinate, point2: lookAtPoint, type_obj: "Face")
+                    self.setOrientation(point1: deviceCoordinate, point2: captureSphereCoordinate, type_obj: "Device")
+                    
+                    //self.setBirdArrowColor(moveType: birdMovementType)
+                    
+                    // reduce size of all objects
+                    self.reduceAllSize()
+                    
+                    // blur background
+                    //self.blurBackground()
                     
                     slow_counter += 1
                     
@@ -394,18 +278,205 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         }
     }
     
-
-    private func draw2DLine(point1: Dictionary<String, Float>, point2: Dictionary<String, Float>, type_obj: String, counter: Int) {
+    private func blurBackground() {
         
-        var transparency_material = PhysicallyBasedMaterial()
-       
-        let x1 = point1["x"] ?? 0
-        let y1 = point1["y"] ?? 0
-        let z1 = point1["z"] ?? 0
+        // currently making everything black
+        arView.backgroundColor = .clear
+        
+        let blurEffect = UIBlurEffect(style: .dark)
+        let blurEffectView = UIVisualEffectView(effect: blurEffect)
+        //always fill the view
+        blurEffectView.frame = self.view.bounds
+        blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        arView.addSubview(blurEffectView)
+    }
+    
+    private func reduceAllSize() {
+        self.captureSphere.captureSphere?.scale *= reduceSize
+        self.captureSphere.dot1?.scale *= reduceSize
+        self.captureSphere.dot2?.scale *= reduceSize
+        self.captureSphere.dot3?.scale *= reduceSize
+        self.captureSphere.dot4?.scale *= reduceSize
+        self.captureSphere.dot5?.scale *= reduceSize
+        self.captureSphere.dot6?.scale *= reduceSize
+        self.captureSphere.dot7?.scale *= reduceSize
+        self.captureSphere.dot8?.scale *= reduceSize
+        self.captureSphere.dot9?.scale *= reduceSize
+        
+        self.hummingBird.hummingBird?.scale *= reduceSize
+        self.hummingBird.face?.scale *= reduceSize
+        self.hummingBird.device?.scale *= reduceSize
+        //self.hummingBird.arrow6?.scale *= reduceSize
+       // self.hummingBird.arrow?.scale *= reduceSize
+    }
+    
+    private func initializeCaptureSphere(count: Int, hummingBirdCoordinate:  Dictionary<String, Float>, captureSphereCoordinate:  Dictionary<String, Float>, hummingbirdPos: Array<Dictionary<String, Float>>, captureSpherePos: Array<Dictionary<String, Float>>, captureSphereObj: Entity ) {
+        
+        self.setCaptureSpherePosition(count: count, hummingBirdCoordinate: hummingBirdCoordinate, captureSphereCoordinate: captureSphereCoordinate, hummingbirdPos: hummingbirdPos, captureSpherePos: captureSpherePos, captureSphereObj: captureSphereObj)
+        
+        self.setSphereTransparencyAndScale(captureSphere: self.captureSphere)
+        
+        // this calls the function that is triggered when you tap on the capture sphere object
+        self.captureSphere.actions.colorChange.onAction = self.handleTapOnEntity(_:)
+        
+    }
+    
+    private func setSphereTransparencyAndScale(captureSphere: Entity) {
+        
+        let dot1 = self.captureSphere.dot1
+        let dot2 = self.captureSphere.dot2
+        let dot3 = self.captureSphere.dot3
+        let dot4 = self.captureSphere.dot4
+        let dot5 = self.captureSphere.dot5
+        let dot6 = self.captureSphere.dot6
+        let dot7 = self.captureSphere.dot7
+        let dot8 = self.captureSphere.dot8
+        let dot9 = self.captureSphere.dot9
 
-        let x2 = point2["x"] ?? 0
-        let y2 = point2["y"] ?? 0
-        let z2 = point2["z"] ?? 0
+        self.countDots = 0
+        self.setTransparency(TransparencyVal: 0.9, DotNum: dot1!)
+        self.setTransparency(TransparencyVal: 0.8, DotNum: dot2!)
+        self.setTransparency(TransparencyVal: 0.7, DotNum: dot3!)
+        self.setTransparency(TransparencyVal: 0.6, DotNum: dot4!)
+        self.setTransparency(TransparencyVal: 0.5, DotNum: dot5!)
+        self.setTransparency(TransparencyVal: 0.4, DotNum: dot6!)
+        self.setTransparency(TransparencyVal: 0.3, DotNum: dot7!)
+        self.setTransparency(TransparencyVal: 0.2, DotNum: dot8!)
+        self.setTransparency(TransparencyVal: 0.1, DotNum: dot9!)
+        
+        // increase scale of trailing dots
+        self.multScaleBy2(object1: dot1!, object2: dot2!, object3: dot3!, object4: dot4!,   object5: dot5!, object6: dot6!, object7: dot7!, object8: dot8!, object9: dot9!)
+    }
+    
+    private func setCaptureSpherePosition(count: Int, hummingBirdCoordinate:  Dictionary<String, Float>, captureSphereCoordinate:  Dictionary<String, Float>, hummingbirdPos: Array<Dictionary<String, Float>>, captureSpherePos: Array<Dictionary<String, Float>>, captureSphereObj: Entity ) {
+
+        // set position of main capture sphere
+        self.setPosition(objectCoordinate: captureSphereCoordinate, object: captureSphereObj, incScale: false)
+
+        // initialize previous coordinates
+        var prev1HummingBirdCoordinate = hummingBirdCoordinate
+        var prev1CaptureSphereCoordinate = captureSphereCoordinate
+
+        var prev2HummingBirdCoordinate = hummingBirdCoordinate
+        var prev2CaptureSphereCoordinate = captureSphereCoordinate
+
+        var prev3HummingBirdCoordinate = hummingBirdCoordinate
+        var prev3CaptureSphereCoordinate = captureSphereCoordinate
+
+        var prev4HummingBirdCoordinate = hummingBirdCoordinate
+        var prev4CaptureSphereCoordinate = captureSphereCoordinate
+
+        var prev5HummingBirdCoordinate = hummingBirdCoordinate
+        var prev5CaptureSphereCoordinate = captureSphereCoordinate
+
+        var prev6HummingBirdCoordinate = hummingBirdCoordinate
+        var prev6CaptureSphereCoordinate = captureSphereCoordinate
+
+        var prev7HummingBirdCoordinate = hummingBirdCoordinate
+        var prev7CaptureSphereCoordinate = captureSphereCoordinate
+
+        var prev8HummingBirdCoordinate = hummingBirdCoordinate
+        var prev8CaptureSphereCoordinate = captureSphereCoordinate
+
+        var prev9HummingBirdCoordinate = hummingBirdCoordinate
+        var prev9CaptureSphereCoordinate = captureSphereCoordinate
+
+        if (count > 2) {
+            prev1HummingBirdCoordinate = hummingbirdPos[count - 3]
+            prev1CaptureSphereCoordinate = captureSpherePos[count - 3]
+        }
+
+        if (count > 4) {
+            prev2HummingBirdCoordinate = hummingbirdPos[count - 5]
+            prev2CaptureSphereCoordinate = captureSpherePos[count - 5]
+        }
+
+        if (count > 6) {
+            prev3HummingBirdCoordinate = hummingbirdPos[count - 7]
+            prev3CaptureSphereCoordinate = captureSpherePos[count - 7]
+        }
+
+        if (count > 8) {
+            prev4HummingBirdCoordinate = hummingbirdPos[count - 9]
+            prev4CaptureSphereCoordinate = captureSpherePos[count - 9]
+        }
+
+        if (count > 10) {
+            prev5HummingBirdCoordinate = hummingbirdPos[count - 11]
+            prev5CaptureSphereCoordinate = captureSpherePos[count - 11]
+        }
+
+        if (count > 12) {
+            prev6HummingBirdCoordinate = hummingbirdPos[count - 13]
+            prev6CaptureSphereCoordinate = captureSpherePos[count - 13]
+        }
+
+        if (count > 14) {
+            prev7HummingBirdCoordinate = hummingbirdPos[count - 15]
+            prev7CaptureSphereCoordinate = captureSpherePos[count - 15]
+        }
+
+        if (count > 16) {
+            prev8HummingBirdCoordinate = hummingbirdPos[count - 17]
+            prev8CaptureSphereCoordinate = captureSpherePos[count - 17]
+        }
+
+        if (count > 18) {
+            prev9HummingBirdCoordinate = hummingbirdPos[count - 19]
+            prev9CaptureSphereCoordinate = captureSpherePos[count - 19]
+        }
+
+        // intialize trailing dots behind capture sphere
+        let dot1 = self.captureSphere.dot1
+        let dot2 = self.captureSphere.dot2
+        let dot3 = self.captureSphere.dot3
+        let dot4 = self.captureSphere.dot4
+        let dot5 = self.captureSphere.dot5
+        let dot6 = self.captureSphere.dot6
+        let dot7 = self.captureSphere.dot7
+        let dot8 = self.captureSphere.dot8
+        let dot9 = self.captureSphere.dot9
+
+        // set the position of these trailing dots
+        self.setPosition(objectCoordinate: prev1CaptureSphereCoordinate, object: dot1!, incScale: false)
+        self.setPosition(objectCoordinate: prev2CaptureSphereCoordinate, object: dot2!, incScale: false)
+        self.setPosition(objectCoordinate: prev3CaptureSphereCoordinate, object: dot3!, incScale: false)
+        self.setPosition(objectCoordinate: prev4CaptureSphereCoordinate, object: dot4!, incScale: false)
+        self.setPosition(objectCoordinate: prev5CaptureSphereCoordinate, object: dot5!, incScale: false)
+        self.setPosition(objectCoordinate: prev6CaptureSphereCoordinate, object: dot6!, incScale: false)
+        self.setPosition(objectCoordinate: prev7CaptureSphereCoordinate, object: dot7!, incScale: false)
+        self.setPosition(objectCoordinate: prev8CaptureSphereCoordinate, object: dot8!, incScale: false)
+        self.setPosition(objectCoordinate: prev9CaptureSphereCoordinate, object: dot9!, incScale: false)
+
+    }
+    
+    private func draw2DLine(point1: Dictionary<String, Float>, point2: Dictionary<String, Float>, type_obj: String, counter: Int, LineEntity: ModelEntity) {
+    
+        let anchor = AnchorEntity()
+        
+        let line_opacity_value = 1.0
+        
+        // append onto list
+        
+        if (type_obj == "Face") {
+            listFaceLines.append(LineEntity)
+            listFaceAnchors.append(anchor)
+            listFaceTransparencies.append(line_opacity_value)
+        }
+        else if (type_obj == "Bird") {
+            listBirdLines.append(LineEntity)
+            listBirdAnchors.append(anchor)
+            listBirdTransparencies.append(line_opacity_value)
+        }
+                        
+        // set position of new line
+        let x1 = (point1["x"] ?? 0) / devideAmount
+        let y1 = (point1["y"] ?? 0) / devideAmount
+        let z1 = (point1["z"] ?? 0) / devideAmount
+
+        let x2 = (point2["x"] ?? 0) / devideAmount
+        let y2 = (point2["y"] ?? 0) / devideAmount
+        let z2 = (point2["z"] ?? 0) / devideAmount
 
         let midPosition = SIMD3<Float>(x:(x1 + x2) / 2,
                                   y:(y1 + y2) / 2,
@@ -414,54 +485,138 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         let position1 = SIMD3<Float>(x: x1, y: y1, z: z1)
         let position2 = SIMD3<Float>(x: x2, y: y2, z: z2)
 
-        let anchor = AnchorEntity()
+        
         anchor.position = midPosition
         anchor.look(at: position1, from: midPosition, relativeTo: nil)
 
+        if (type_obj == "Face") {
+            transparency_material_line.baseColor = .init(tint: .red)
+        }
+
+        else if (type_obj == "Bird") {
+            transparency_material_line.baseColor = .init(tint: .gray)
+        }
+    
+        transparency_material_line.blending = .transparent(opacity: .init(floatLiteral: Float(line_opacity_value)))
+        
+        // update opacity of all the lines
+        self.setTransparencyLine(type_obj: type_obj)
+        
+        // create mesh
         let depth_size = simd_distance(position1, position2)
 
-        transparency_material.baseColor = .init(tint: .red)
-        
-        // update opacity of line
-        line_opacity_value -= 0.001
-    
-        if (line_opacity_value <= 0) {
-            line_opacity_value = 1
-        }
-        
-        transparency_material.blending = .transparent(opacity: .init(floatLiteral: Float(line_opacity_value)))
-
-        // problem, - I am creating new entity every frame which is causing a lag
         let bottomLineMesh = MeshResource.generateBox(width: Float(line_width),
                                                       height: Float(line_width),
                                                       depth: depth_size)
-
-        // update mesh
-        if (type_obj == "Face") {
-            bottomLineFace.model = .init(mesh: bottomLineMesh, materials: [transparency_material])
-
-            anchor.addChild(bottomLineFace)
-            arView.scene.addAnchor(anchor)
-        }
+        //update model with mesh
+        LineEntity.model = .init(mesh: bottomLineMesh, materials: [transparency_material_line])
         
-        else if (type_obj == "Bird") {
-            bottomLineBird.model = .init(mesh: bottomLineMesh, materials: [transparency_material])
+        anchor.addChild(LineEntity)
+        arView.scene.addAnchor(anchor)
+    
+        countLine += 1
+    }
+
+    private func setTransparencyLine(type_obj: String) {
+        
+        if (type_obj == "Bird") {
+            var j = 0
+            // go through entire list and decrease transparency, delete if transparency is zero
+            for transparency_val in listBirdTransparencies {
+                // transparency_val -= 0.1 // error - not mutating the value
+                
+                listBirdTransparencies[j] -= 0.35
+                
+                if (transparency_val <= 0.0) {
+                    
+                    // delete that line
+                    let firstAnchor = listBirdAnchors[0]
+                    let firstLine = listBirdLines[0]
+                    
+                    firstAnchor.removeChild(firstLine)
+                    
+                    listBirdLines.remove(at: 0)
+                    listBirdAnchors.remove(at: 0)
+                    listBirdTransparencies.remove(at: 0)
+                    break
+                    
+                }
+                
+                j += 1
+            }
             
-            anchor.addChild(bottomLineBird)
-            arView.scene.addAnchor(anchor)
+            var i = 0
+            for line in listBirdLines {
+                
+                var transparencyMat = PhysicallyBasedMaterial()
+                let transparency_val = listBirdTransparencies[i]
+            
+                // set color and transparency
+                transparencyMat.baseColor = .init(tint: .gray)
+                transparencyMat.blending = .transparent(opacity: .init(floatLiteral: Float(transparency_val)))
+                
+                // update the material of the line
+                line.model?.materials = [transparencyMat]
+                
+                i += 1
+            }
+        }
+        else if (type_obj == "Face") {
+            var j = 0
+            // go through entire list and decrease transparency, delete if transparency is zero
+            for transparency_val in listFaceTransparencies {
+                // transparency_val -= 0.1 // error - not mutating the value
+                
+                listFaceTransparencies[j] -= 0.35
+                
+                if (transparency_val <= 0.0) {
+                    
+                    // delete that line
+                    let firstAnchor = listFaceAnchors[0]
+                    let firstLine = listFaceLines[0]
+                    
+                    firstAnchor.removeChild(firstLine)
+                    
+                    listFaceLines.remove(at: 0)
+                    listFaceAnchors.remove(at: 0)
+                    listFaceTransparencies.remove(at: 0)
+                    break
+                    
+                }
+                
+                j += 1
+            }
+            
+            var i = 0
+            for line in listFaceLines {
+                
+                var transparencyMat = PhysicallyBasedMaterial()
+                let transparency_val = listFaceTransparencies[i]
+                
+                print(transparency_val)
+                // set color and transparency
+                transparencyMat.baseColor = .init(tint: .red)
+                transparencyMat.blending = .transparent(opacity: .init(floatLiteral: Float(transparency_val)))
+                
+                // update the material of the line
+                line.model?.materials = [transparencyMat]
+                
+                i += 1
+            }
+            
         }
     }
     
     private func setOrientation(point1: Dictionary<String, Float>, point2: Dictionary<String, Float>, type_obj: String) {
 
         // NOTE: pitch = x & yaw = y
-         let x1 = point1["x"] ?? 0
-         let y1 = point1["y"] ?? 0
-         let z1 = point1["z"] ?? 0
+         let x1 = (point1["x"] ?? 0) / devideAmount
+         let y1 = (point1["y"] ?? 0) / devideAmount
+         let z1 = (point1["z"] ?? 0) / devideAmount
 
-         let x2 = point2["x"] ?? 0
-         let y2 = point2["y"] ?? 0
-         let z2 = point2["z"] ?? 0
+         let x2 = (point2["x"] ?? 0) / devideAmount
+         let y2 = (point2["y"] ?? 0) / devideAmount
+         let z2 = (point2["z"] ?? 0) / devideAmount
         
         // face orientation
         let dx = x1 - x2
@@ -472,16 +627,20 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                 
         if (type_obj == "Face") {
             self.hummingBird.face?.orientation = simd_quatf(angle: -yaw + (.pi / 2) + .pi, axis: [0,1,0])
-            self.hummingBird.arrow6?.orientation = simd_quatf(angle: -yaw + (.pi / 2), axis: [0,1,0])
+            //self.hummingBird.arrow6?.orientation = simd_quatf(angle: -yaw + (.pi / 2), axis: [0,1,0])
         }
         
-        else if (type_obj == "Bird") {
-            self.hummingBird.arrow?.orientation = simd_quatf(angle: -yaw + (.pi / 2), axis: [0,1,0])
+//        else if (type_obj == "Bird") {
+//            self.hummingBird.arrow?.orientation = simd_quatf(angle: -yaw + (.pi / 2), axis: [0,1,0])
+//        }
+        
+        else if (type_obj == "Device") {
+            self.hummingBird.device?.orientation = simd_quatf(angle: -yaw + (.pi / 2), axis: [0,1,0])
         }
+        
     }
 
-    private func setBirdBackgroundColor(background: Entity, moveType: String) {
-        // set transparency
+    private func setBirdArrowColor(moveType: String) {
         var transparent_material = PhysicallyBasedMaterial()
         
         // then set color based on movement type
@@ -489,41 +648,27 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
             moveType == "Continuing Forward From Escape" || moveType == "Escape Movement") { // moving
             
             transparent_material.baseColor = .init(tint: .green)
-            
-            //self.hummingBird.arrow?.scale *
         }
         
         else { // stopped
             transparent_material.baseColor = .init(tint: .red)
-            
-            // make direction arrow disappear when it is stopped
-            
-            
-            //self.hummingBird.arrow?.scale *= 0.001
         }
-        
         
         transparent_material.blending = .transparent(opacity: .init(floatLiteral: 0.7))
         
-        
-//        if let modelEntity = background.findEntity(named: "simpBld_root") as? ModelEntity {
+//        if let modelEntity = self.hummingBird.arrow!.findEntity(named: "simpBld_root") as? ModelEntity {
 //            modelEntity.model?.materials[0] = transparent_material
 //
 //        }
-        
-        if let modelEntity = self.hummingBird.arrow!.findEntity(named: "simpBld_root") as? ModelEntity {
-            modelEntity.model?.materials[0] = transparent_material
-            
-        }
     }
 
     private func setRotation(object: Entity, rotation: Dictionary<String, Float>) {
         
         // rotation in radians
         // [-pi/2, pi/2]
-        let xRotation = (rotation["x"] ?? 0)
-        let yRotation = (rotation["y"] ?? 0)
-        let zRotation = (rotation["z"] ?? 0)
+        let xRotation = (rotation["x"] ?? 0) / devideAmount
+        let yRotation = (rotation["y"] ?? 0) / devideAmount
+        let zRotation = (rotation["z"] ?? 0) / devideAmount
         
         object.orientation = simd_quatf(angle: xRotation, axis: [1,0,0]) // x - axis
         object.orientation = simd_quatf(angle: yRotation, axis: [0,1,0]) // y - axis
@@ -532,13 +677,13 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
     
     private func ReturnfindDistance(objectCoordinate1: Dictionary<String, Float>, objectCoordinate2: Dictionary<String, Float>) -> Float{
         
-        let x1 = (objectCoordinate1["x"] ?? 0)
-        let y1 = (objectCoordinate1["y"] ?? 0)
-        let z1 = (objectCoordinate1["z"] ?? 0)
+        let x1 = (objectCoordinate1["x"] ?? 0) / devideAmount
+        let y1 = (objectCoordinate1["y"] ?? 0) / devideAmount
+        let z1 = (objectCoordinate1["z"] ?? 0) / devideAmount
         
-        let x2 = (objectCoordinate2["x"] ?? 0)
-        let y2 = (objectCoordinate2["y"] ?? 0)
-        let z2 = (objectCoordinate2["z"] ?? 0)
+        let x2 = (objectCoordinate2["x"] ?? 0) / devideAmount
+        let y2 = (objectCoordinate2["y"] ?? 0) / devideAmount
+        let z2 = (objectCoordinate2["z"] ?? 0) / devideAmount
         
         let xdiff = abs(x1 - x2)
         let ydiff = abs(y1 - y2)
@@ -557,13 +702,13 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
     // function finds distance between two objects
     private func findDistance(objectCoordinate1: Dictionary<String, Float>, objectCoordinate2: Dictionary<String, Float>) {
         
-        let x1 = (objectCoordinate1["x"] ?? 0)
-        let y1 = (objectCoordinate1["y"] ?? 0)
-        let z1 = (objectCoordinate1["z"] ?? 0)
+        let x1 = (objectCoordinate1["x"] ?? 0) / devideAmount
+        let y1 = (objectCoordinate1["y"] ?? 0) / devideAmount
+        let z1 = (objectCoordinate1["z"] ?? 0) / devideAmount
         
-        let x2 = (objectCoordinate2["x"] ?? 0)
-        let y2 = (objectCoordinate2["y"] ?? 0)
-        let z2 = (objectCoordinate2["z"] ?? 0)
+        let x2 = (objectCoordinate2["x"] ?? 0) / devideAmount
+        let y2 = (objectCoordinate2["y"] ?? 0) / devideAmount
+        let z2 = (objectCoordinate2["z"] ?? 0) / devideAmount
         
         let xdiff = abs(x1 - x2)
         let ydiff = abs(y1 - y2)
@@ -594,9 +739,7 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
             
            // print(maxDistance)
         }
-        
-        
-     
+    
     }
     
     // function that is called when you tap on the capture sphere
@@ -606,8 +749,6 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         blueSphere = true
         
        // setColorBlue()
-        
-        
     }
     
     private func multScaleBy2(object1: Entity, object2: Entity, object3: Entity, object4: Entity, object5: Entity, object6: Entity, object7: Entity, object8: Entity, object9: Entity) {
@@ -626,9 +767,9 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
     
     private func setPosition(objectCoordinate: Dictionary<String, Float> , object: Entity, incScale: Bool) {
 
-        let posx = (objectCoordinate["x"] ?? 0)
-        let posy = (objectCoordinate["y"] ?? 0)
-        let posz = (objectCoordinate["z"] ?? 0)
+        let posx = (objectCoordinate["x"] ?? 0) / devideAmount
+        let posy = (objectCoordinate["y"] ?? 0) / devideAmount
+        let posz = (objectCoordinate["z"] ?? 0) / devideAmount
 
         let objectTranslation = SIMD3<Float>(x: posx, y: posy, z: posz)
         var objectTransform = Transform(scale: .one, rotation: simd_quatf(), translation: objectTranslation)
@@ -660,29 +801,29 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         }
         
     }
+//
+//    private func setColorGreen() {
+//        var color_material = PhysicallyBasedMaterial()
+//
+//        // how you change the color of an object
+//        color_material.baseColor = .init(tint: .green)
+//
+//        //print(self.hummingBird.birdBackground!)
+//        if let modelEntity = self.hummingBird.birdBackground!.findEntity(named: "simpBld_root") as? ModelEntity {
+//            modelEntity.model?.materials[0] = color_material
+//        }
+//    }
     
-    private func setColorGreen() {
-        var color_material = PhysicallyBasedMaterial()
-        
-        // how you change the color of an object
-        color_material.baseColor = .init(tint: .green)
-        
-        //print(self.hummingBird.birdBackground!)
-        if let modelEntity = self.hummingBird.birdBackground!.findEntity(named: "simpBld_root") as? ModelEntity {
-            modelEntity.model?.materials[0] = color_material
-        }
-    }
-    
-    private func setColorRed() {
-        var color_material = PhysicallyBasedMaterial()
-        
-        // how you change the color of an object
-        color_material.baseColor = .init(tint: .red)
-        if let modelEntity = self.hummingBird.birdBackground!.findEntity(named: "simpBld_root") as? ModelEntity {
-            modelEntity.model?.materials[0] = color_material
-        }
-    }
-    
+//    private func setColorRed() {
+//        var color_material = PhysicallyBasedMaterial()
+//
+//        // how you change the color of an object
+//        color_material.baseColor = .init(tint: .red)
+//        if let modelEntity = self.hummingBird.birdBackground!.findEntity(named: "simpBld_root") as? ModelEntity {
+//            modelEntity.model?.materials[0] = color_material
+//        }
+//    }
+
     private func setColorBlue(distance: Float) {
         
         //blueSphere = true
@@ -744,7 +885,7 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
             modelEntity.model?.materials[0] = color_material
         }
     }
-
+    
     private func setTransparency(TransparencyVal: Float, DotNum: Entity) {
         
         countDots += 1
@@ -798,10 +939,6 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
             
             countDots = 0
         }
-        
-        
-        
-        
         
         transparent_material.blending = .transparent(opacity: .init(floatLiteral: TransparencyVal))
         
