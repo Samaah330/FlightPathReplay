@@ -11,19 +11,19 @@ import UIKit
 extension UITextView {
 
     // Adds a UIToolbar with a dismiss button as UITextView's inputAccesssoryView (which appears on top of the keyboard)
-    func addDismissButton() {
+    func addSideBar() {
         let dismissToolbar = UIToolbar(frame: CGRect(origin: .zero, size: CGSize(width: UIScreen.main.bounds.width, height: 44)))
                 
-        let dismissButton = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(dismissKeyboard))
+        let dismissButton = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(dismissSidebar))
         dismissToolbar.items = [dismissButton]
         inputAccessoryView = dismissToolbar
-        
     
     }
-
+    
     @objc
-    func dismissKeyboard() {
-        endEditing(true)
+    func dismissSidebar() {
+        print("hello")
     }
+
 
 }

@@ -18,6 +18,8 @@
 		6C8E684A28E6D69800D84752 /* FlightPathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8E684928E6D69800D84752 /* FlightPathTests.swift */; };
 		6C8E685428E6D69800D84752 /* FlightPathUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8E685328E6D69800D84752 /* FlightPathUITests.swift */; };
 		6C8E685628E6D69800D84752 /* FlightPathUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8E685528E6D69800D84752 /* FlightPathUITestsLaunchTests.swift */; };
+		D4CAFB422A14307E00A53B35 /* Sidebar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CAFB412A14307E00A53B35 /* Sidebar.swift */; };
+		D4CAFB442A14453000A53B35 /* SidebarButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CAFB432A14453000A53B35 /* SidebarButton.swift */; };
 		D4E23D1F2939A5DE00F7B359 /* GradientView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E23D1E2939A5DE00F7B359 /* GradientView.swift */; };
 		D4E23D212939A8AE00F7B359 /* NoteEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E23D202939A8AE00F7B359 /* NoteEntity.swift */; };
 		D4E23D232939AA1100F7B359 /* NoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E23D222939AA1100F7B359 /* NoteView.swift */; };
@@ -59,6 +61,8 @@
 		6C8E685328E6D69800D84752 /* FlightPathUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightPathUITests.swift; sourceTree = "<group>"; };
 		6C8E685528E6D69800D84752 /* FlightPathUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightPathUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		D429218F29C39AC60069A149 /* Device.rcproject */ = {isa = PBXFileReference; lastKnownFileType = file.rcproject; path = Device.rcproject; sourceTree = "<group>"; };
+		D4CAFB412A14307E00A53B35 /* Sidebar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sidebar.swift; sourceTree = "<group>"; };
+		D4CAFB432A14453000A53B35 /* SidebarButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarButton.swift; sourceTree = "<group>"; };
 		D4E23D1E2939A5DE00F7B359 /* GradientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientView.swift; sourceTree = "<group>"; };
 		D4E23D202939A8AE00F7B359 /* NoteEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteEntity.swift; sourceTree = "<group>"; };
 		D4E23D222939AA1100F7B359 /* NoteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteView.swift; sourceTree = "<group>"; };
@@ -121,8 +125,10 @@
 				D4E23D202939A8AE00F7B359 /* NoteEntity.swift */,
 				D4E23D222939AA1100F7B359 /* NoteView.swift */,
 				D4E23D242939AA9000F7B359 /* KeyBoardDismissButton.swift */,
+				D4CAFB432A14453000A53B35 /* SidebarButton.swift */,
 				D4E23D262939AADD00F7B359 /* ScreenSpaceComponent.swift */,
 				D4E23D282939AB4900F7B359 /* UIViewSuperView.swift */,
+				D4CAFB412A14307E00A53B35 /* Sidebar.swift */,
 				6C31BF7029151EF8006331B3 /* CaptureSphere.rcproject */,
 				6C8E683928E6D69500D84752 /* Main.storyboard */,
 				6C8E683C28E6D69800D84752 /* Assets.xcassets */,
@@ -291,6 +297,8 @@
 				D4E23D232939AA1100F7B359 /* NoteView.swift in Sources */,
 				6C8E683428E6D69500D84752 /* AppDelegate.swift in Sources */,
 				D4E23D272939AADD00F7B359 /* ScreenSpaceComponent.swift in Sources */,
+				D4CAFB442A14453000A53B35 /* SidebarButton.swift in Sources */,
+				D4CAFB422A14307E00A53B35 /* Sidebar.swift in Sources */,
 				D4E23D252939AA9000F7B359 /* KeyBoardDismissButton.swift in Sources */,
 				D4E23D292939AB4900F7B359 /* UIViewSuperView.swift in Sources */,
 			);
