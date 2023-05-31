@@ -15,7 +15,7 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
     var jsonData: GameData!
     var counter = 0
 
-    var devideAmount = Float(9.0)
+    var amountDecreasePosition = Float(9.0)
     var reduceSize = Float(0.4)
 
     // Hummingbird and Capture Sphere Entity
@@ -41,10 +41,13 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
     // Stores number of spheres created
     var countSpheres = 0
     
+    // Used to create new lines between hummingtbird and capture sphere
     var listBirdLines: [ModelEntity] = []
     var listBirdAnchors: [AnchorEntity] = []
     var listBirdTransparencies: [Double] = []
     var listBirdTimes: [Double] = []
+    // width of this line
+    var line_width = 0.0008
     
     // Used to create new lines between capture sphere and device every couple of frames
     var listDeviceLines: [ModelEntity] = []
@@ -65,28 +68,6 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
     
     // Stores previous capture sohere coordinate
     var prevCapCoord : Dictionary<String, Float> = ["": 0]
-    
-    
-    
-    var line_width = 0.0008
-    
-    // capture sphere colors
-    var blueSphere = false
-    var light1 = false
-    var light2 = false
-    var light3 = false
-    var light4 = false
-    var light5 = false
-    var light6 = false
-    var light7 = false
-    
-    var light1Blue = CGColor(red: 0.639215, green: 0.788235, blue: 0.968627, alpha: 0.9)
-    var light2Blue = CGColor(red: 0.517647, green: 0.7254902, blue: 0.98039, alpha: 0.9)
-    var light3Blue = CGColor(red: 0.4, green: 0.6627, blue: 0.98039215, alpha: 0.9)
-    var light4Blue = CGColor(red: 0.2823529, green: 0.596078, blue: 0.98039, alpha: 0.9)
-    var light5Blue = CGColor(red: 0.1647, green: 0.5333, blue: 0.98039215, alpha: 0.9)
-    var light6Blue = CGColor(red: 0.05, green: 0.4745, blue: 0.98039, alpha: 0.9)
-    var light7Blue = CGColor(red: 0.0196, green: 0.439, blue: 0.9490, alpha: 0.9)
 
     // Data extracted into variables
     struct GameData: Decodable {
@@ -138,13 +119,15 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         
         // remove face for now since lookat positition has inaccurate data
         hummingBird.face?.scale *= 0
+        
+        // load data
+        jsonData = loadJson(fileName: "data")!
        
         // If the user taps the screen, the function "myviewTapped" is called
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(ViewController.myviewTapped))
         arView.addGestureRecognizer(tapGesture)
         arView.session.delegate = self
         
-        jsonData = loadJson(fileName: "data")!
         overlayUISetup()
     }
     
@@ -232,24 +215,24 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                     // set transparency of bird, device, and capture sphere. Set color of capture sphere
                     self.setMaterials()
                     
-            
                     // set orientation of arrow next to bird depending on the birds next coordinate - remove for now
                     //  var nextHummingBirdCoordinate = hummingbirdPos[count + 1]
 //                    self.setOrientation(point1: hummingBirdCoordinate, point2: nextHummingBirdCoordinate, type_obj: "Bird")
                  
+                    // draw lines every time slow counter reaches 15 frames
                     if (slow_counter % 15 == 0) {
                         
                         // create model Entity for line between Bird and capture sphere
                         var bottomLineBird = ModelEntity()
                     
                         // draw line between hummingbird and sphere
-                        self.draw2DLine(count: slow_counter, point1: hummingBirdCoordinate, point2: captureSphereCoordinate, type_obj: "Bird", counter: slow_counter, LineEntity: bottomLineBird)
+                        self.drawLine(count: slow_counter, point1: hummingBirdCoordinate, point2: captureSphereCoordinate, type_obj: "Bird", counter: slow_counter, LineEntity: bottomLineBird)
                         
                         // create model Entity for line between device and capture sphere
                         var bottomLineDevice = ModelEntity()
                         
                         // draw line between device and capture sphere
-                        self.draw2DLine(count: slow_counter, point1: deviceCoordinate, point2: captureSphereCoordinate, type_obj: "Device", counter: count, LineEntity: bottomLineDevice)
+                        self.drawLine(count: slow_counter, point1: deviceCoordinate, point2: captureSphereCoordinate, type_obj: "Device", counter: count, LineEntity: bottomLineDevice)
                        
                         // Update length of line on shown on UI
                         self.setLineLength(lineCoordinate1: hummingBirdCoordinate, lineCoordinate2: captureSphereCoordinate)
@@ -301,7 +284,7 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         
         self.hummingBird.device?.scale *= (2 * reduceSize)
         self.captureSphere.captureSphere?.scale *= 0.2
-        self.hummingBird.hummingBird?.scale *= reduceSize
+        self.hummingBird.hummingBird?.scale *= (50 * reduceSize)
     }
     
     // set the lengthUI for the length of the line between capture sphere and hummingbird. This is displayed in the UI
@@ -360,25 +343,7 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         
     }
     
-    private func makeRotationMatrix(rotX: Float, rotY: Float, rotZ: Float) -> simd_float3x3 {
-        let rows = [
-            simd_float3(cos(rotY) * cos(rotZ), cos(rotX) * sin(rotZ) + sin(rotX) * sin(rotY) * cos(rotZ), sin(rotX) * sin(rotZ) - cos(rotX) * sin(rotY) * cos(rotZ)),
-            
-            simd_float3(-cos(rotY) * sin(rotZ),
-                         cos(rotX) * cos(rotZ) - sin(rotX) * sin(rotY) * sin(rotZ),
-                         sin(rotX) * cos(rotZ) + cos(rotX) * sin(rotY) * sin(rotZ)),
-            
-            simd_float3(sin(rotY), -sin(rotX) * cos(rotY), cos(rotX) * cos(rotY))
-        ]
-        
-        return float3x3(rows: rows)
-    }
-
-    private func reduceAllSize() {
- 
-    }
-  
-    
+    // Set material (color and transparency) of device, bird, and capture sphere
     private func setMaterials() {
         
         var material = PhysicallyBasedMaterial()
@@ -413,6 +378,7 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         }
     }
     
+    
     private func drawSphere(Entity: ModelEntity, captureSphereCoordinate: Dictionary<String, Float>) {
         
         let anchor = AnchorEntity()
@@ -424,9 +390,9 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         listSphereTimes.append(0)
         
         // set position of new sphere
-        let position = SIMD3<Float>(x: (captureSphereCoordinate["x"] ?? 0) / devideAmount,
-                                    y: (captureSphereCoordinate["y"] ?? 0) / devideAmount,
-                                    z: (captureSphereCoordinate["z"] ?? 0) / devideAmount)
+        let position = SIMD3<Float>(x: (captureSphereCoordinate["x"] ?? 0) / amountDecreasePosition,
+                                    y: (captureSphereCoordinate["y"] ?? 0) / amountDecreasePosition,
+                                    z: (captureSphereCoordinate["z"] ?? 0) / amountDecreasePosition)
         
         anchor.position = position
         
@@ -498,8 +464,7 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
             i += 1
         }
         
-        // now iterate through bird times list and see if any are greater than 3. If they are remove those lines
-        
+        // now iterate through sphere times list and see if any are greater than 5. If they are remove those spheres
         var k = 0
         for time in listSphereTimes {
 
@@ -524,7 +489,8 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         
     }
     
-    private func draw2DLine(count: Int, point1: Dictionary<String, Float>, point2: Dictionary<String, Float>, type_obj: String, counter: Int, LineEntity: ModelEntity) {
+    // draw line between 2 points
+    private func drawLine(count: Int, point1: Dictionary<String, Float>, point2: Dictionary<String, Float>, type_obj: String, counter: Int, LineEntity: ModelEntity) {
         
         if listDeviceAnchors.count > 0{
             
@@ -539,18 +505,17 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         
         }
     
-    
         let anchor = AnchorEntity()
         let line_opacity_value = 1.0
         
         // append onto list
-        
         if (type_obj == "Device") {
             listDeviceLines.append(LineEntity)
             listDeviceAnchors.append(anchor)
             listDeviceTransparencies.append(line_opacity_value)
         
         }
+        
         else if (type_obj == "Bird") {
             listBirdLines.append(LineEntity)
             listBirdAnchors.append(anchor)
@@ -559,13 +524,13 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         }
                         
         // set position of new line
-        let x1 = (point1["x"] ?? 0) / devideAmount
-        let y1 = (point1["y"] ?? 0) / devideAmount
-        let z1 = (point1["z"] ?? 0) / devideAmount
+        let x1 = (point1["x"] ?? 0) / amountDecreasePosition
+        let y1 = (point1["y"] ?? 0) / amountDecreasePosition
+        let z1 = (point1["z"] ?? 0) / amountDecreasePosition
 
-        let x2 = (point2["x"] ?? 0) / devideAmount
-        let y2 = (point2["y"] ?? 0) / devideAmount
-        let z2 = (point2["z"] ?? 0) / devideAmount
+        let x2 = (point2["x"] ?? 0) / amountDecreasePosition
+        let y2 = (point2["y"] ?? 0) / amountDecreasePosition
+        let z2 = (point2["z"] ?? 0) / amountDecreasePosition
 
         let midPosition = SIMD3<Float>(x:(x1 + x2) / 2,
                                   y:(y1 + y2) / 2,
@@ -573,7 +538,6 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
 
         let position1 = SIMD3<Float>(x: x1, y: y1, z: z1)
         let position2 = SIMD3<Float>(x: x2, y: y2, z: z2)
-
         
         anchor.position = midPosition
         anchor.look(at: position1, from: midPosition, relativeTo: nil)
@@ -608,7 +572,6 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                                                           depth: depth_size)
         }
 
-      
         //update model with mesh
         LineEntity.model = .init(mesh: bottomLineMesh, materials: [transparency_material_line])
         
@@ -626,11 +589,8 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         }
 
     }
-
-    // i am adding a line evety second, and only keeping the lines from the past 3 seconds, so I only end up with 3 lines
+    
     private func setTransparencyLine(count: Int, type_obj: String) {
-        
-
         if (type_obj == "Bird") {
             var j = 0
             // go through entire list and decrease transparency, delete if transparency is zero
@@ -674,8 +634,7 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
                 i += 1
             }
             
-            // now iterate through bird times list and see if any are greater than 3. If they are remove those lines
-            
+            // now iterate through bird times list and see if any are greater than 5. If they are remove those lines
             var k = 0
             for time in listBirdTimes {
 
@@ -700,16 +659,17 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         }
     }
     
+    // set orientation of one enitity based off another enitity
     private func setOrientation(point1: Dictionary<String, Float>, point2: Dictionary<String, Float>, type_obj: String) {
 
         // NOTE: pitch = x & yaw = y
-         let x1 = (point1["x"] ?? 0) / devideAmount
-         let y1 = (point1["y"] ?? 0) / devideAmount
-         let z1 = (point1["z"] ?? 0) / devideAmount
+         let x1 = (point1["x"] ?? 0) / amountDecreasePosition
+         let y1 = (point1["y"] ?? 0) / amountDecreasePosition
+         let z1 = (point1["z"] ?? 0) / amountDecreasePosition
 
-         let x2 = (point2["x"] ?? 0) / devideAmount
-         let y2 = (point2["y"] ?? 0) / devideAmount
-         let z2 = (point2["z"] ?? 0) / devideAmount
+         let x2 = (point2["x"] ?? 0) / amountDecreasePosition
+         let y2 = (point2["y"] ?? 0) / amountDecreasePosition
+         let z2 = (point2["z"] ?? 0) / amountDecreasePosition
         
         // face orientation
         let dx = x1 - x2
@@ -732,29 +692,31 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         }
         
     }
+
     
-    private func setRotation(object: Entity, rotation: Dictionary<String, Float>) {
-        
-        // rotation in radians
-        // [-pi/2, pi/2]
-        let xRotation = (rotation["x"] ?? 0) / devideAmount
-        let yRotation = (rotation["y"] ?? 0) / devideAmount
-        let zRotation = (rotation["z"] ?? 0) / devideAmount
-        
-        object.orientation = simd_quatf(angle: xRotation, axis: [1,0,0]) // x - axis
-        object.orientation = simd_quatf(angle: yRotation, axis: [0,1,0]) // y - axis
-        object.orientation = simd_quatf(angle: zRotation, axis: [0,0,1]) // z - axis
-    }
+//    private func setRotation(object: Entity, rotation: Dictionary<String, Float>) {
+//
+//        // rotation in radians
+//        // [-pi/2, pi/2]
+//        let xRotation = (rotation["x"] ?? 0) / amountDecreasePosition
+//        let yRotation = (rotation["y"] ?? 0) / amountDecreasePosition
+//        let zRotation = (rotation["z"] ?? 0) / amountDecreasePosition
+//
+//        object.orientation = simd_quatf(angle: xRotation, axis: [1,0,0]) // x - axis
+//        object.orientation = simd_quatf(angle: yRotation, axis: [0,1,0]) // y - axis
+//        object.orientation = simd_quatf(angle: zRotation, axis: [0,0,1]) // z - axis
+//    }
     
+    // calculate distance between 2 points or objects
     private func getDistance(objectCoordinate1: Dictionary<String, Float>, objectCoordinate2: Dictionary<String, Float>) -> Float{
         
-        let x1 = (objectCoordinate1["x"] ?? 0) / devideAmount
-        let y1 = (objectCoordinate1["y"] ?? 0) / devideAmount
-        let z1 = (objectCoordinate1["z"] ?? 0) / devideAmount
+        let x1 = (objectCoordinate1["x"] ?? 0) / amountDecreasePosition
+        let y1 = (objectCoordinate1["y"] ?? 0) / amountDecreasePosition
+        let z1 = (objectCoordinate1["z"] ?? 0) / amountDecreasePosition
         
-        let x2 = (objectCoordinate2["x"] ?? 0) / devideAmount
-        let y2 = (objectCoordinate2["y"] ?? 0) / devideAmount
-        let z2 = (objectCoordinate2["z"] ?? 0) / devideAmount
+        let x2 = (objectCoordinate2["x"] ?? 0) / amountDecreasePosition
+        let y2 = (objectCoordinate2["y"] ?? 0) / amountDecreasePosition
+        let z2 = (objectCoordinate2["z"] ?? 0) / amountDecreasePosition
         
         let xdiff = abs(x1 - x2)
         let ydiff = abs(y1 - y2)
@@ -770,39 +732,27 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         return distance
     }
     
-    private func multScaleBy2(object1: Entity, object2: Entity, object3: Entity, object4: Entity, object5: Entity, object6: Entity, object7: Entity, object8: Entity, object9: Entity) {
-        
-        object1.transform.scale *= 2.0
-        object2.transform.scale *= 2.0
-        object3.transform.scale *= 2.0
-        object4.transform.scale *= 2.0
-        object5.transform.scale *= 2.0
-        object6.transform.scale *= 2.0
-        object7.transform.scale *= 2.0
-        object8.transform.scale *= 2.0
-        object9.transform.scale *= 2.0
-     
-    }
-    
+    // set position of a given object
     private func setPosition(objectCoordinate: Dictionary<String, Float> , object: Entity, incScale: Bool) {
 
-        let posx = (objectCoordinate["x"] ?? 0) / devideAmount
-        let posy = (objectCoordinate["y"] ?? 0) / devideAmount
-        let posz = (objectCoordinate["z"] ?? 0) / devideAmount
+        let posx = (objectCoordinate["x"] ?? 0) / amountDecreasePosition
+        let posy = (objectCoordinate["y"] ?? 0) / amountDecreasePosition
+        let posz = (objectCoordinate["z"] ?? 0) / amountDecreasePosition
 
         let objectTranslation = SIMD3<Float>(x: posx, y: posy, z: posz)
         var objectTransform = Transform(scale: .one, rotation: simd_quatf(), translation: objectTranslation)
-
-        if (incScale) {
-            // multiple the scale of the hummingbird by 50 since the model being used is very small
-            objectTransform.scale *= 50
-            
-        }
+//
+//        if (incScale) {
+//            // multiple the scale of the hummingbird by 50 since the model being used is very small
+//            objectTransform.scale *= 50
+//
+//        }
         
         object.move(to: objectTransform, relativeTo: nil)
 
     }
 
+    // Load data from Json file
     private func loadJson(fileName: String) -> GameData? {
         if let url = Bundle.main.url(forResource: fileName, withExtension: "json") {
             if let data = try? Data(contentsOf: url) {
@@ -820,6 +770,7 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
         return nil
     }
     
+    // following functions for notes - visual annotation
     func updateScene(on event: SceneEvents.Update) {
         let notesToUpdate = Notes.compactMap { !$0.isEditing && !$0.isDragging ? $0 : nil }
         for note in notesToUpdate {
@@ -864,8 +815,7 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
             }
         }
     }
-    
-    
+
     // - Tag: TextViewDidBeginEditing
     func textViewDidBeginEditing(_ textView: UITextView) {
 
@@ -919,22 +869,23 @@ class ViewController: UIViewController , ARSessionDelegate, UITextViewDelegate, 
     }
     
     func overlayUISetup() {
-        
-        // Setting up the trashZone, which is used to delete Views and their associated Notes.
-        setupTrashZone()
-    }
+         
+         // Setting up the trashZone, which is used to delete Views and their associated Notes.
+         setupTrashZone()
+     }
 
-    fileprivate func setupTrashZone() {
-        trashZone = GradientView(topColor: UIColor.red.withAlphaComponent(0.7).cgColor, bottomColor: UIColor.red.withAlphaComponent(0).cgColor)
-        trashZone.translatesAutoresizingMaskIntoConstraints = false
-        arView.addSubview(trashZone)
-        NSLayoutConstraint.activate([
-            trashZone.topAnchor.constraint(equalTo: arView.topAnchor),
-            trashZone.leadingAnchor.constraint(equalTo: arView.leadingAnchor),
-            trashZone.trailingAnchor.constraint(equalTo: arView.trailingAnchor),
-            trashZone.heightAnchor.constraint(equalTo: arView.heightAnchor, multiplier: 0.33)
-        ])
-        trashZone.alpha = 0
-    }
+     fileprivate func setupTrashZone() {
+         trashZone = GradientView(topColor: UIColor.red.withAlphaComponent(0.7).cgColor, bottomColor: UIColor.red.withAlphaComponent(0).cgColor)
+         trashZone.translatesAutoresizingMaskIntoConstraints = false
+         arView.addSubview(trashZone)
+         NSLayoutConstraint.activate([
+             trashZone.topAnchor.constraint(equalTo: arView.topAnchor),
+             trashZone.leadingAnchor.constraint(equalTo: arView.leadingAnchor),
+             trashZone.trailingAnchor.constraint(equalTo: arView.trailingAnchor),
+             trashZone.heightAnchor.constraint(equalTo: arView.heightAnchor, multiplier: 0.33)
+         ])
+         trashZone.alpha = 0
+     }
+    
 }
 
